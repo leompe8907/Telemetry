@@ -1,0 +1,13 @@
+intv
+baseUrl : "https://pmdw-1.in.tv.br"
+cvToken	AsGHqHpHYZiacNsAWiyS
+cvUser	itv_Analitics
+cvPass	Analitics771!#
+
+bromteck
+baseUrl : "https://cv01.panaccess.com"
+cvToken = "bnctZTHpigaMzLhfdRVJ";
+cvPass	123NbnB!
+cvUser	nbr_sw4
+
+RSO

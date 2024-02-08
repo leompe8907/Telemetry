@@ -1,0 +1,67 @@
+.Background {
+    background-image: url("../../Media/Img/BGbromteck.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .Login{
+        background-color: rgba(0, 0, 0, 0.164);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: content-box;
+        height: 35em;
+        width: 27em;
+        border-radius: 8%;
+
+        .logo{
+            height: 30%;
+            margin-top: 5%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+                .Logo{
+                    height: 8em;
+                }
+        }
+        .formLogin{
+            height: 70%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            width: 80%;
+            border-radius: 15%;
+            padding: 40px;
+            .user{
+                width: 100%;
+                border: 0;
+                border-bottom: 2px rgb(255, 255, 255) solid;
+                height: 70%;
+                font-size: larger;
+                font-style: oblique;
+                font-family: serif;
+                color: white;
+                background: #00000012;
+                margin-bottom: 20px;
+                text-align: center;
+                border-radius: 10px;
+            }
+            .user::placeholder{
+                color: white;
+                font-size: larger;
+                height: max-content;
+                text-align: center;
+            }
+            .user:hover{
+                cursor: pointer;
+            }
+        }
+    }
+}

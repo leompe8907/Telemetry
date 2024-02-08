@@ -1,0 +1,148 @@
+.containerGeneralInformation{
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f8fafc;
+    justify-content: center;
+    color: black;
+    box-sizing: border-box;
+
+    .containerGeneral{
+        width: 90%;
+        border: #999898 1px solid;
+        box-shadow: 0px 2px 12px 9px #9b8d8d;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        -ms-border-radius: 10px;
+        -o-border-radius: 10px;
+
+
+        .containerGeneralForms{
+            width: 100%;
+            height: 12vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 9px;
+            border: 1px black solid;
+            background-color: #f1e7d8;
+
+            .containerForm{
+                display: flex;
+                justify-content: space-evenly;
+                align-items: center;
+                width: 100%;
+
+                .containerInput{
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    .date{
+                        margin-bottom: 4px;
+                        font-size: larger;
+                        font-style: inherit;
+                        font-weight: 500;
+                        font-family: serif;
+                    }
+                    #startDate, #endDate{
+                        height: 25px;
+                        width: 100px;
+                    }
+                }
+                .button{
+                    border-radius: 9px;
+                    height: 40px;
+                    width: 82px;
+                }
+                .button:hover{
+                    background-color: black;
+                    color: white;
+                }
+            }
+        }
+        .containerGeneralTable{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+            background-color: #fdfdfd;
+            border: 1px solid black;
+            .containerTableType{
+                width: 50%;
+                .containerTittle{
+                    text-align: center;
+                }
+                .containerTable{
+                    width: 100%;
+                    .containerTableThead{
+                        height: 30px;
+                        .containerTableTr{
+                            width: 100%;
+                            text-align: center;
+                        }
+                    }
+                    .containerTableTBody{
+                        height: 440px;
+                        width: 100%;
+                        .containerTableTh{
+                            text-align: center;
+                        }
+                    }
+                }
+
+            }
+        }
+        .TableTimezone{
+            width: 100%;
+            .tableTypeTimezone{
+                height: 440px;
+                .tableTimezone{
+                    height: 80px;
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: nowrap;
+                    border: black solid 1px;
+                    .TableTheadTimezone{
+                        height: 80px;
+                        width: 150px;
+                        .TableTrTimezone{
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            height: 100%;
+                            justify-content: space-around;
+                        }
+                    }
+                    .tableTBodyTimezone{
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        justify-content: space-around;
+                        height: 80px;
+                        .tableTrTimezone{
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-around;
+                            height: 80px;
+                        }
+                    }
+                }
+            }
+        }
+        .TableOTT{
+
+        }
+        .containerGraphType{
+            width: 50%;
+            .containerTittle{
+                text-align: center;
+            }
+        }
+    }
+    
+}
