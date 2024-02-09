@@ -23,7 +23,9 @@ class Telemetria(models.Model):
     recordId = models.IntegerField(null=True, blank=True)
     smartcardId = models.CharField(max_length=50, null=True)
     subscriberCode = models.CharField(max_length=50, null=True)
-    timestamp = models.IntegerField(null=True, blank=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    dataDate = models.DateField(null=True, blank=True)
+    timeDate = models.TimeField(null=True, blank=True)
     whoisCountry = models.CharField(max_length=20, null=True, blank=True)
     whoisIsp = models.CharField(max_length=20, null=True, blank=True)
 

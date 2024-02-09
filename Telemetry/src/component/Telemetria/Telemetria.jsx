@@ -19,7 +19,7 @@ const Telemetria = () => {
             sessionId: localStorage.getItem("sessionID"),
             offset: pageNumber,
             limit: limit,
-            orderBy: "timestamp",
+            orderBy: "recordId",
             orderDir: "DESC"
           },
           (result) => resolve(result)
@@ -95,13 +95,18 @@ const Telemetria = () => {
         } = telemetryRecord;
 
         console.log(timestamp)
-        // Convierte la marca de tiempo a milisegundos
-        const timestampDate = new Date(telemetryRecord.timestamp);
-        const timestampMilliseconds = timestampDate.getTime();
 
         console.log("Record ID:", recordId);
         console.log("Subscriber Code:", subscriberCode);
-        console.log("Timestamp en milisegundos:", timestampMilliseconds);
+
+        const timestampWithTimeZone = timestamp + 'Z';  // Agregar 'Z' para indicar la zona horaria UTC
+        const dateTime = new Date(timestampWithTimeZone);
+        const dataDate = dateTime.toISOString().split('T')[0]
+        const timeDate = dateTime.toISOString().split('T')[1].split('.')[0];
+
+        console.log(dataDate)
+        console.log(timeDate)
+
 
         let result;
         try {
@@ -120,7 +125,7 @@ const Telemetria = () => {
               actionId,
               actionKey,
               date,
-              timestamp: timestampMilliseconds,
+              timestamp,
               manual,
               reaonId,
               reasonKey,
@@ -135,7 +140,9 @@ const Telemetria = () => {
               whoisIsp,
               ipId,
               ip,
-              profileId
+              profileId,
+              dataDate,
+              timeDate
             }),
           });
         } catch (error) {
