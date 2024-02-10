@@ -8,7 +8,7 @@ const Prueba = () => {
   const fetchData = async () => {
     try {
       // Construir la URL con las fechas seleccionadas
-      const url = `http://localhost:8000/telemetria/telemetria/merged/totalhoras/?start_date=${startDate}&end_date=${endDate}`;
+      const url = `http://localhost:8000/telemetria/telemetria/merged/`;
 
       const response = await axios.get(url);
 

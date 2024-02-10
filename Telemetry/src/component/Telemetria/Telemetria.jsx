@@ -95,17 +95,21 @@ const Telemetria = () => {
         } = telemetryRecord;
 
         console.log(timestamp)
+        const data = new Date(timestamp);
+        const fecha = data.toISOString().split('T')[0]
+        const hora = data.toISOString().split('T')[1].split('.')[0];
+        const timestampMilliseconds = data.getTime();
+
+        // Asigna los valores divididos al objeto telemetryRecord
+        telemetryRecord.dataDate = fecha;
+        telemetryRecord.timeDate = hora;
+
 
         console.log("Record ID:", recordId);
         console.log("Subscriber Code:", subscriberCode);
-
-        const timestampWithTimeZone = timestamp + 'Z';  // Agregar 'Z' para indicar la zona horaria UTC
-        const dateTime = new Date(timestampWithTimeZone);
-        const dataDate = dateTime.toISOString().split('T')[0]
-        const timeDate = dateTime.toISOString().split('T')[1].split('.')[0];
-
-        console.log(dataDate)
-        console.log(timeDate)
+        console.log(fecha)
+        console.log(hora)
+        console.log(timestampMilliseconds)
 
 
         let result;
@@ -125,7 +129,7 @@ const Telemetria = () => {
               actionId,
               actionKey,
               date,
-              timestamp,
+              timestamp: timestampMilliseconds,
               manual,
               reaonId,
               reasonKey,
@@ -141,8 +145,8 @@ const Telemetria = () => {
               ipId,
               ip,
               profileId,
-              dataDate,
-              timeDate
+              dataDate: fecha,
+              timeDate: hora,
             }),
           });
         } catch (error) {
