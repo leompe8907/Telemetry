@@ -4,30 +4,37 @@ import axios from 'axios';
 const Prueba = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const fetchData = async () => {
     try {
-      // Construir la URL con las fechas seleccionadas
-      const url = `http://localhost:8000/telemetria/telemetria/merged/`;
+      setLoading(true);
+      setError('');
+
+      const url = `http://localhost:8000/telemetria/merged/copia/${startDate}/${endDate}/`;
+      const url1 = `http://localhost:8000/telemetria/telemetria/merged/`;
 
       const response = await axios.get(url);
+      const response1 = await axios.get(url1);
 
       console.log(response.data);
+      console.log(response1.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError('Error al recuperar datos. Por favor, inténtelo de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    // Validación básica de fechas
     if (startDate && endDate) {
-      console.log(startDate)
-      // Llamar a la función de fetchData con las fechas
       fetchData();
     } else {
-      console.error('Por favor, seleccione ambas fechas.');
+      setError('Por favor, seleccione ambas fechas.');
     }
   };
 
@@ -52,8 +59,13 @@ const Prueba = () => {
           />
         </label>
         <br />
-        <button type="submit">Consultar Datos</button>
+        <button type="submit" disabled={loading}>
+          Consultar Datos
+        </button>
       </form>
+
+      {loading && <p>Cargando...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 };
