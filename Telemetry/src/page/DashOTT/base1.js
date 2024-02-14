@@ -5,11 +5,13 @@ import "./DashOTT.scss"
 function DashOTT() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  
   const [smartcardCounts, setSmartcardCounts] = useState([]);
   const [dataNameCounts, setDataNameCounts] = useState([]);
   const [dataNameSumDurations, setDataNameSumDurations] = useState([]);
   const [dataNameAverages, setDataNameAverages] = useState([]);
-
+  
+  const [timeSlotSumDurations, setTimeSlotSumDurations] = useState({Mañana: 0,Tarde: 0,Noche: 0,});
   const [smartcardChartData, setSmartcardChartData] = useState(null);
   const [dataNameChartData, setDataNameChartData] = useState(null);
   const [dataDurationChartData, setDataDurationChartData] = useState(null);
@@ -22,7 +24,8 @@ function DashOTT() {
     setEndDate(event.target.value);
   };
 
-  const searchAndCountSmartcards = (start, end) => {
+  // franja horaria
+  const searchAndSumDataDurationByTimeSlot = (start, end) => {
     const startTimestamp = new Date(start).getTime();
     const endTimestamp = new Date(end).getTime();
 
@@ -38,30 +41,82 @@ function DashOTT() {
       const index = dataOTT.index('timestampIndex');
       const requestAllObjects = index.getAll(range);
 
+      const MañanaStart = 6;
+      const TardeStart = 12;
+      const NocheStart = 18;
+
+      const sums = {
+        Mañana: 0,
+        Tarde: 0,
+        Noche: 0,
+      };
+
       requestAllObjects.onsuccess = (event) => {
         const result = event.target.result;
-        const counts = {};
+
         result.forEach((item) => {
-          const smartcardId = item.smartcardId;
-          counts[smartcardId] = (counts[smartcardId] || 0) + 1;
+          const dataDuration = item.dataDuration;
+          const timestamp = new Date(item.timestamp);
+          const hour = timestamp.getUTCHours();
+
+          if (hour < TardeStart) {
+            sums.Mañana += dataDuration;
+          } else if (hour < NocheStart) {
+            sums.Tarde += dataDuration;
+          } else {
+            sums.Noche += dataDuration;
+          }
         });
 
-        const sortedCounts = Object.entries(counts)
-          .sort((a, b) => b[1] - a[1])
-          .reduce((acc, [smartcardId, count]) => {
-            acc[smartcardId] = count;
-            return acc;
-          }, {});
-
-        setSmartcardCounts(sortedCounts);
+        setTimeSlotSumDurations(sums);
       };
 
       requestAllObjects.onerror = (event) => {
         console.error("Error al obtener los objetos:", event.target.error);
       };
     };
-  };
+  };;
 
+  // tiempo que ese dispositivo vio  tv
+  const searchAndCountSmartcards = (start, end) => {
+    const startTimestamp = new Date(start).getTime();
+    const endTimestamp = new Date(end).getTime();
+  
+    const range = IDBKeyRange.bound(startTimestamp, endTimestamp);
+  
+    const request = indexedDB.open('TelemetryDB', 1);
+  
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const dataOTTtryTransaction = db.transaction(['dataOTT'], 'readonly');
+      const dataOTT = dataOTTtryTransaction.objectStore('dataOTT');
+  
+      const index = dataOTT.index('timestampIndex');
+      const requestAllObjects = index.getAll(range);
+  
+      requestAllObjects.onsuccess = (event) => {
+        const result = event.target.result;
+        const sums = {};
+        result.forEach((item) => {
+          const smartcardId = item.smartcardId;
+          const dataDuration = item.dataDuration;
+          sums[smartcardId] = (sums[smartcardId] || 0) + dataDuration;
+        });
+  
+        const sumsInHours = {};
+        Object.entries(sums).forEach(([smartcardId, sumDuration]) => {
+          sumsInHours[smartcardId] = sumDuration / 3600;
+        });
+  
+        setSmartcardCounts(sumsInHours);
+      };
+  
+      requestAllObjects.onerror = (event) => {
+        console.error("Error al obtener los objetos:", event.target.error);
+      };
+    };
+  };
+  
   const searchAndCountDataNames = (start, end) => {
     const startTimestamp = new Date(start).getTime();
     const endTimestamp = new Date(end).getTime();
@@ -123,6 +178,7 @@ function DashOTT() {
     };
   };
 
+  // canales vs duracion
   const searchAndSumDataDuration = (start, end) => {
     const startTimestamp = new Date(start).getTime();
     const endTimestamp = new Date(end).getTime();
@@ -166,6 +222,7 @@ function DashOTT() {
     searchAndCountSmartcards(startDate, endDate);
     searchAndCountDataNames(startDate, endDate);
     searchAndSumDataDuration(startDate, endDate);
+    searchAndSumDataDurationByTimeSlot(startDate, endDate)
   };
 
   useEffect(() => {
@@ -309,21 +366,45 @@ function DashOTT() {
           </div>
           <div className='containerGeneralTables'>
 
-          <div className='containerGeneralTable'>
-              <div className='containerTableType'>
-                <h2 className='containerTittle'>Resultados duracion de OTT</h2>
-                <table className='containerTable'>
-                  <thead className='containerTableThead'>
-                    <tr className='containerTableTr'>
-                      <th className='containerTableTh'>OTT</th>
-                      <th className='containerTableTh'>Suma de dataDuration</th>
+            {/*Franaja horarias*/}
+            <div className='containerGeneralTable TableTimezone'>
+              <div className='containerTableType tableTypeTimezone'>
+                <h2 className='containerTittle'>Resultados de la franja horaria</h2>
+                <table className='containerTable tableTimezone'>
+                  <thead className='containerTableThead TableTheadTimezone'>
+                    <tr className='containerTableTr TableTrTimezone'>
+                      <th className='containerTableTh'>Franja horaria</th>
+                      <th className='containerTableTh'>Suma de horas</th>
                     </tr>
                   </thead>
-                  <tbody className='containerTableTBody'>
+                  <tbody className='containerTableTBody tableTBodyTimezone'>
+                    {Object.entries(timeSlotSumDurations).map(([timeSlot, sumDuration]) => (
+                      <tr className='containerTableTr tableTrTimezone' key={timeSlot}>
+                        <td className='containerTableTh'>{timeSlot}</td>
+                        <td className='containerTableTh'>{sumDuration}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Duracion de los OTT*/}
+            <div className='containerGeneralTable TableOTT'>
+              <div className='containerTableType tableTypeOTT'>
+                <h2 className='containerTittle'>Duracion de los OTT</h2>
+                <table className='containerTable tableOTT'>
+                  <thead className='containerTableThead TableTheadOTT'>
+                    <tr className='containerTableTr TableTrOTT'>
+                      <th className='containerTableTh'>OTT</th>
+                      <th className='containerTableTh'>Suma total de Horas</th>
+                    </tr>
+                  </thead>
+                  <tbody className='containerTableTBody TableTBodyOTT'>
                     {Object.entries(dataNameSumDurations)
                       .sort((a, b) => b[1] - a[1])
                       .map(([dataName, sumDuration]) => (
-                        <tr className='containerTableTr' key={dataName}>
+                        <tr className='containerTableTr TableTrOTT' key={dataName}>
                           <td className='containerTableTh'>{dataName}</td>
                           <td className='containerTableTh'> {sumDuration.toFixed(2)}</td>
                         </tr>
@@ -394,7 +475,7 @@ function DashOTT() {
                 <canvas id="dataNameChart" width="400" height="200"></canvas>
               </div>
             </div>
-                        
+
           </div>
         </div>
       </div>

@@ -98,25 +98,3 @@ class MergedTelemetricData(APIView):
     def get(self, request, format=None):
         result = self.filter_and_sum_data()
         return result
-
-class MergedDataDate(MergedTelemetricData):
-    @staticmethod
-    def Copy(start_date=None, end_date=None):
-        # Obtener datos de MergedTelemetricData
-        data = MergedTelemetricData.filter_and_sum_data()
-
-        # Realizar el filtro en base al rango de fechas si se proporcionan
-        if start_date and end_date:
-            filtered_data = [obj for obj in data if start_date <= obj.dataDate <= end_date]
-        else:
-            filtered_data = data
-
-        # Sumar los valores de dataDuration para los objetos filtrados
-        total_duration = sum(obj.dataDuration for obj in filtered_data)
-
-        # Devolver el resultado como JSON
-        return Response({'filtered_data': filtered_data, 'total_duration': total_duration})
-
-    def get(self, request, format=None):
-        result = self.Copy()
-        return result
