@@ -8,6 +8,13 @@ const Prueba = () => {
   const [filteredData, setFilteredData] = useState([]); // Nuevo estado para almacenar datos filtrados
   const [error, setError] = useState(null);
 
+  // suma total de segundos de los objetos filtrados
+  const [generalDuration, setGeneralDuration] = useState(null)
+  // suma total de segundos de los objtos filtrados por franja horaria
+  const [sumByTimeSlot, setSumByTimeSlot] = useState({Manaña: 0,Tarde: 0,Noche: 0,Madrugada: 0});
+  // estado de los canales y su suma por horas
+  const [dataName, setDataName] = useState({})
+
   const handleSearch = async () => {
     try {
       // Verificar que se hayan seleccionado fechas
@@ -47,8 +54,10 @@ const Prueba = () => {
 
   // Función para sumar el parámetro dataDuration de los objetos filtrados
   const sumDataDuration = () => {
+    // Verificar que haya datos filtrados
     if (filteredData.length === 0) {
-      return 0; // Retorna 0 si no hay datos filtrados
+      console.error("No hay datos filtrados para sumar.");
+      return;
     }
 
     // Sumar dataDuration de todos los objetos filtrados
@@ -56,55 +65,65 @@ const Prueba = () => {
       return accumulator + (result.dataDuration || 0);
     }, 0);
 
-    return totalDataDuration;
+    setGeneralDuration(totalDataDuration)
   };
 
    // Función para sumar el dataDuration según la franja horaria
-   const sumDataDurationByTimeSlot = (timeSlot) => {
+  const sumDataDurationByTimeSlot = () => {
+    // Verificar que haya datos filtrados
     if (filteredData.length === 0) {
-      return 0; // Retorna 0 si no hay datos filtrados
+      console.error("No hay datos filtrados para sumar.");
+      return;
     }
-    // Filtrar los datos según la franja horaria
-    const dataByTimeSlot = filteredData.filter((result) => {
-      const hour = parseInt(result.timeDate.split(':')[0], 10);
-      
-      if (timeSlot === 'mañana') {
-        return hour >= 5 && hour < 12;
-      } else if (timeSlot === 'tarde') {
-        return hour >= 12 && hour < 18;
-      } else if (timeSlot === 'noche') {
-        return (hour >= 18 && hour <= 23) || (hour >= 0 && hour < 5);
+    // Inicializar objetos para almacenar las sumas por franja horaria
+    const sums = {
+      Mañana: 0,
+      Tarde: 0,
+      Noche: 0,
+      Madrugada : 0
+    };
+
+    filteredData.forEach(result => {
+      const dataDuration = result.dataDuration;
+      const times = result.timeDate
+      console.log("times: ",times)
+      console.log("duration: ",dataDuration)
+
+  
+      if (times >= 4 && times < 12) {
+        sums.Mañana += dataDuration;
+      } else if (times >= 12 && times < 18) {
+        sums.Tarde += dataDuration;
+      } else if (times >= 18 && times < 23){
+        sums.Noche += dataDuration;
+      } else {
+        sums.Madrugada += dataDuration
       }
+    })
+    console.log("sums:", sums); 
 
-      return false;
-    });
-
-    // Sumar dataDuration de los resultados filtrados por franja horaria
-    const totalDataDuration = dataByTimeSlot.reduce((accumulator, result) => {
-      return accumulator + (result.dataDuration || 0);
-    }, 0);
-
-    return totalDataDuration;
+    // Actualizar el estado con las sumas por franja horaria
+    setSumByTimeSlot(sums);
   };
 
-// Función para crear un diccionario de dataName con la suma de dataDuration
-const dictDataDurationByDataName = () => {
-  if (filteredData.length === 0) {
-    return {}; // Retorna un objeto vacío si no hay datos filtrados
-  }
+  // Función para filtrar los dataName con la suma de dataDuration
+  const dictDataDurationByDataName = () => {
+    if (filteredData.length === 0) {
+      return {}; // Retorna un objeto vacío si no hay datos filtrados
+    }
+    const sums = {};
 
-  // Crear el diccionario de dataName con la suma de dataDuration
-  const dataDict = filteredData.reduce((accumulator, result) => {
-    const dataName = result.dataName;
+    filteredData.forEach(result => {
+      const name = result.dataName;
+      const duration = result.dataDuration;
+    
+      sums[name] = (sums[name] || 0) + duration;
+    });
+    console.log(sums)
+    setDataName(sums)
+    console.log("dataname: ",dataName)
 
-    // Sumar dataDuration al valor existente o comenzar desde 0 si es la primera vez
-    accumulator[dataName] = (accumulator[dataName] || 0) + (result.dataDuration || 0);
-
-    return accumulator;
-  }, {});
-
-  return dataDict;
-};
+  };
 
 
   // Puedes utilizar los datos filtrados fuera de la función handleSearch
@@ -112,19 +131,18 @@ const dictDataDurationByDataName = () => {
     // Ejemplo: Imprimir los datos filtrados en la consola cuando cambien
     console.log("Datos filtrados actualizados:", filteredData);
 
-    // Ejemplo: Imprimir la suma de dataDuration según la franja horaria
-    console.log("Suma de dataDuration en la mañana:", sumDataDurationByTimeSlot('mañana'));
-    console.log("Suma de dataDuration en la tarde:", sumDataDurationByTimeSlot('tarde'));
-    console.log("Suma de dataDuration en la noche:", sumDataDurationByTimeSlot('noche'));
+    console.log(generalDuration)
+    sumDataDurationByTimeSlot();
 
     // Ejemplo: Imprimir la suma de dataDuration
     console.log("Suma de dataDuration:", sumDataDuration());
 
  // Ejemplo: Obtener el diccionario de dataName con la suma de dataDuration
- const dataDict = dictDataDurationByDataName();
- console.log("Diccionario de dataName con suma de dataDuration:", dataDict);
+    dictDataDurationByDataName();
+//  console.log("Diccionario de dataName con suma de dataDuration:", dataDict);
   }, [filteredData]);
   return (
+    <>
     <div>
       <h2>Formulario de Filtro por Fechas</h2>
       <form>
@@ -160,6 +178,58 @@ const dictDataDurationByDataName = () => {
       )}
       {error && <p>Error: {error.message}</p>}
     </div>
+    <div>
+      <p id="result">La suma total de dataDuration es: {generalDuration}</p>
+    </div>
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Franja Horaria</th>
+            <th>Suma Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mañana</td>
+            <td>{sumByTimeSlot.Mañana}</td>
+          </tr>
+          <tr>
+            <td>Tarde</td>
+            <td>{sumByTimeSlot.Tarde}</td>
+          </tr>
+          <tr>
+            <td>Noche</td>
+            <td>{sumByTimeSlot.Noche}</td>
+          </tr>
+          <tr>
+            <td>Madrugada</td>
+            <td>{sumByTimeSlot.Madrugada}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h2>Tabla de Resultados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre de Datos</th>
+            <th>Duración Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(dataName).map(([name, totalDuration]) => (
+            <tr key={name}>
+              <td>{name}</td>
+              <td>{totalDuration}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    </>
   );
 };
 

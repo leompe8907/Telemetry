@@ -25,7 +25,7 @@ class Telemetria(models.Model):
     subscriberCode = models.CharField(max_length=50, null=True)
     timestamp = models.IntegerField(null=True, blank=True)
     dataDate = models.DateField(null=True, blank=True)
-    timeDate = models.TimeField(null=True, blank=True)
+    timeDate = models.IntegerField(null=True, blank=True)
     whoisCountry = models.CharField(max_length=20, null=True, blank=True)
     whoisIsp = models.CharField(max_length=20, null=True, blank=True)
 

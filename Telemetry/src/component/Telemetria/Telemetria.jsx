@@ -94,22 +94,27 @@ const Telemetria = () => {
           profileId
         } = telemetryRecord;
 
-        console.log(timestamp)
         const data = new Date(timestamp);
+        const hora = data.getHours()
+        const min = data.getMinutes()
+        const sec = data.getSeconds()
+        const time = `${hora}:${min}:${sec}`
         const fecha = data.toISOString().split('T')[0]
-        const hora = data.toISOString().split('T')[1].split('.')[0];
         const timestampMilliseconds = data.getTime();
-
+        
         // Asigna los valores divididos al objeto telemetryRecord
         telemetryRecord.dataDate = fecha;
-        telemetryRecord.timeDate = hora;
-
-
+        telemetryRecord.timeDate = time;
+        
+        
         console.log("Record ID:", recordId);
         console.log("Subscriber Code:", subscriberCode);
-        console.log(fecha)
-        console.log(hora)
-        console.log(timestampMilliseconds)
+        console.log(timestamp)
+        console.log("data: ",data)
+        console.log("fecha: ",fecha)
+        console.log("hora: ",time)
+        console.log(typeof(hora))
+        console.log("milisegundos",timestampMilliseconds)
 
 
         let result;
