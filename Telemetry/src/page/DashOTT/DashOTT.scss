@@ -20,6 +20,7 @@
         -moz-border-radius: 10px;
         -ms-border-radius: 10px;
         -o-border-radius: 10px;
+        margin: 25px;
 
 
         .containerGeneralForms{
@@ -28,9 +29,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 9px;
+            border-radius: 2px;
             border: 1px black solid;
             background-color: #f1e7d8;
+
 
             .containerForm{
                 display: flex;
@@ -97,11 +99,11 @@
 
             }
         }
-        .TableTimezone{
+        .TableTimeZone{
             width: 100%;
-            .tableTypeTimezone{
+            .tableTypeTimeZone{
                 height: 440px;
-                .tableTimezone{
+                .tableTimeZone{
                     height: 80px;
                     display: flex;
                     flex-direction: row;

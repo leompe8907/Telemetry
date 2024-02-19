@@ -4,24 +4,19 @@ import axios from 'axios';
 const Prueba = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [resultData, setResultData] = useState(null);
   const [filteredData, setFilteredData] = useState([]); // Nuevo estado para almacenar datos filtrados
-  const [error, setError] = useState(null);
 
   // suma total de segundos de los objetos filtrados
   const [generalDuration, setGeneralDuration] = useState(null)
   // suma total de segundos de los objtos filtrados por franja horaria
   const [sumByTimeSlot, setSumByTimeSlot] = useState({Manaña: 0,Tarde: 0,Noche: 0,Madrugada: 0});
+  // suma total 
+  const [sumChannelTimeSlot, setSumChannelTimeSlot] = useState({Manaña: {},Tarde: {},Noche: {},Madrugada: {}});
   // estado de los canales y su suma por horas
   const [dataName, setDataName] = useState({})
 
   const handleSearch = async () => {
     try {
-      // Verificar que se hayan seleccionado fechas
-      if (!startDate || !endDate) {
-        setError(new Error('Por favor, selecciona fechas de inicio y fin.'));
-        return;
-      }
 
       // Realizar la conexión con la API
       const response = await axios.get(`http://localhost:8000/telemetria/merged/`);
@@ -41,14 +36,10 @@ const Prueba = () => {
       // Mostrar los datos filtrados por consola
       console.log("Datos filtrados:", filteredData);
 
-      // Actualizar el estado con los resultados filtrados
-      setResultData(filteredData);
-      setError(null);
     } catch (error) {
       // Manejar errores de la API
       setFilteredData([]); // Limpiar el array en caso de error
-      setResultData(null);
-      setError(error);
+
     }
   };
 
@@ -106,6 +97,39 @@ const Prueba = () => {
     setSumByTimeSlot(sums);
   };
 
+  //Función para filtrar los dataName con la suma de dataDuracion segun su franja horaria
+  const channelsHoursByTimeSlot = () => {
+    if (filteredData.length === 0 ){
+      return {};
+    }
+
+    // Inicializar objetos para almacenar las sumas por franja horaria
+    const sums = {
+    Mañana: {},
+    Tarde: {},
+    Noche: {},
+    Madrugada : {}
+    };
+    filteredData.forEach(result => {
+      const dataDuration = result.dataDuration;
+      const times = result.timeDate;
+      const name = result.dataName;
+
+      if (times >= 4 && times < 12) {
+        sums.Mañana[name] = (sums.Mañana[name] || 0) + dataDuration;
+      } else if (times >= 12 && times < 18) {
+        sums.Tarde[name] = (sums.Tarde[name] || 0) + dataDuration;
+      } else if (times >= 18 && times < 23) {
+        sums.Noche[name] = (sums.Noche[name] || 0) + dataDuration;
+      } else {
+        sums.Madrugada[name] = (sums.Madrugada[name] || 0) + dataDuration;
+      }
+
+    })
+    setSumChannelTimeSlot(sums)
+    console.log('canalesfranja: ',sums)
+  }
+
   // Función para filtrar los dataName con la suma de dataDuration
   const dictDataDurationByDataName = () => {
     if (filteredData.length === 0) {
@@ -137,98 +161,118 @@ const Prueba = () => {
     // Ejemplo: Imprimir la suma de dataDuration
     console.log("Suma de dataDuration:", sumDataDuration());
 
- // Ejemplo: Obtener el diccionario de dataName con la suma de dataDuration
+    // Ejemplo: Obtener el diccionario de dataName con la suma de dataDuration
     dictDataDurationByDataName();
+    channelsHoursByTimeSlot()
 //  console.log("Diccionario de dataName con suma de dataDuration:", dataDict);
   }, [filteredData]);
+
   return (
     <>
-    <div>
-      <h2>Formulario de Filtro por Fechas</h2>
-      <form>
-        <label>
-          Fecha de inicio:
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </label>
-        <br />
-        <label>
-          Fecha de fin:
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </label>
-        <br />
-        <button type="button" onClick={handleSearch}>
-          Buscar
-        </button>
-      </form>
+      <div>
+        <h2>Formulario de Filtro por Fechas</h2>
+        <form>
+          <label>
+            Fecha de inicio:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          <br />
+          <label>
+            Fecha de fin:
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+          <br />
+          <button type="button" onClick={handleSearch}>
+            Buscar
+          </button>
+        </form>
+      </div>
 
-      {/* Mostrar los resultados o errores */}
-      {resultData && (
-        <div>
-          <h3>Resultados:</h3>
-          <pre>{JSON.stringify(resultData, null, 2)}</pre>
-        </div>
-      )}
-      {error && <p>Error: {error.message}</p>}
-    </div>
-    <div>
-      <p id="result">La suma total de dataDuration es: {generalDuration}</p>
-    </div>
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Franja Horaria</th>
-            <th>Suma Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Mañana</td>
-            <td>{sumByTimeSlot.Mañana}</td>
-          </tr>
-          <tr>
-            <td>Tarde</td>
-            <td>{sumByTimeSlot.Tarde}</td>
-          </tr>
-          <tr>
-            <td>Noche</td>
-            <td>{sumByTimeSlot.Noche}</td>
-          </tr>
-          <tr>
-            <td>Madrugada</td>
-            <td>{sumByTimeSlot.Madrugada}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div>
+        <p id="result">La suma total de dataDuration es: {generalDuration}</p>
+      </div>
 
-    <div>
-      <h2>Tabla de Resultados</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre de Datos</th>
-            <th>Duración Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(dataName).map(([name, totalDuration]) => (
-            <tr key={name}>
-              <td>{name}</td>
-              <td>{totalDuration}</td>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Franja Horaria</th>
+              <th>Suma Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mañana</td>
+              <td>{sumByTimeSlot.Mañana}</td>
+            </tr>
+            <tr>
+              <td>Tarde</td>
+              <td>{sumByTimeSlot.Tarde}</td>
+            </tr>
+            <tr>
+              <td>Noche</td>
+              <td>{sumByTimeSlot.Noche}</td>
+            </tr>
+            <tr>
+              <td>Madrugada</td>
+              <td>{sumByTimeSlot.Madrugada}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2>Tabla de Resultados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre de Datos</th>
+              <th>Duración Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(dataName).map(([name, totalDuration]) => (
+              <tr key={name}>
+                <td>{name}</td>
+                <td>{totalDuration}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2>Tabla de Resultados por Franja Horaria y DataName</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Franja Horaria</th>
+              <th>Nombre de Datos</th>
+              <th>Duración Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(sumChannelTimeSlot).map(([timeSlot, dataNames]) => (
+              Object.entries(dataNames).map(([dataName, totalDuration]) => (
+                <tr key={`${timeSlot}-${dataName}`}>
+                  <td>{timeSlot}</td>
+                  <td>{dataName}</td>
+                  <td>{totalDuration}</td>
+                </tr>
+              ))
+            ))}
+          </tbody>
+        </table>
+      </div>
+
     </>
   );
 };
