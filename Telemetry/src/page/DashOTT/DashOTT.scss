@@ -109,10 +109,10 @@
                     flex-direction: row;
                     flex-wrap: nowrap;
                     border: black solid 1px;
-                    .TableTheadTimezone{
+                    .TableTheadTimeZone{
                         height: 80px;
                         width: 150px;
-                        .TableTrTimezone{
+                        .TableTrTimeZone{
                             display: flex;
                             flex-direction: column;
                             align-items: center;
@@ -120,17 +120,20 @@
                             justify-content: space-around;
                         }
                     }
-                    .tableTBodyTimezone{
+                    .tableTBodyTimeZone{
                         display: flex;
                         flex-direction: row;
                         align-items: center;
                         justify-content: space-around;
                         height: 80px;
-                        .tableTrTimezone{
+                        .tableTrTimeZone{
                             display: flex;
                             flex-direction: column;
                             justify-content: space-around;
                             height: 80px;
+                            margin-left: 10px;
+                            margin-right: 10px;
+                            align-items: center;
                         }
                     }
                 }

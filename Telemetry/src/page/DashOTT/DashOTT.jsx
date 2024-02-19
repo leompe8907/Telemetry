@@ -10,9 +10,11 @@ function DashOTT() {
 
   // suma total de segundos de los objetos filtrados
   const [generalDuration, setGeneralDuration] = useState(null)
+  // suma total de dispositivos filtrados
+  const [device, setDevice] = useState(0)
   // suma total de segundos de los objtos filtrados por franja horaria
   const [sumByTimeSlot, setSumByTimeSlot] = useState({Manaña: 0,Tarde: 0,Noche: 0,Madrugada: 0});
-  // suma total 
+  // canales con suma de segundos divididos por franja horaria
   const [sumChannelTimeSlot, setSumChannelTimeSlot] = useState({Manaña: {},Tarde: {},Noche: {},Madrugada: {}});
   // estado de los canales y su suma por horas
   const [dataName, setDataName] = useState({})
@@ -60,6 +62,24 @@ function DashOTT() {
     // Actualizar el estado con la suma total de dataDuration
     setGeneralDuration(totalDataDuration);
   };
+
+  // Función para sumar el parámetro smarrcardId de los objetos filtrados
+  const sumSmartcardId = () => {
+    // Verificar que haya datos filtrados
+    if (filteredData.length === 0) {
+      console.error("No hay datos filtrados para sumar.");
+      return;
+    }
+    let counter = 0
+    filteredData.forEach(result => {
+      const smartcard = result.smartcardId;
+      if (smartcard !== undefined && smartcard !== null && smartcard !== "") {
+        counter += 1;
+      }
+    })
+    console.log(counter)
+    setDevice(counter)
+  }
 
    // Función para sumar el dataDuration según la franja horaria
    const sumDataDurationByTimeSlot = () => {
@@ -137,34 +157,51 @@ function DashOTT() {
   };
 
   // Función para filtrar los dataName con la suma de dataDuration
-  const dictDataDurationByDataName = () => {
-    // Verificar que haya datos filtrados
-    if (filteredData.length === 0) {
-      // Si no hay datos, retorna un objeto vacío
-      return {};
+const dictDataDurationByDataName = () => {
+  // Verificar que haya datos filtrados
+  if (filteredData.length === 0) {
+    // Si no hay datos, retorna un objeto vacío
+    return {};
+  }
+
+  // Inicializar un array para almacenar las sumas como pares clave-valor
+  const sumsArray = [];
+
+  // Iterar sobre los datos filtrados
+  filteredData.forEach(result => {
+    const name = result.dataName;
+    const duration = result.dataDuration;
+
+    // Buscar el índice de la entrada actual en el array
+    const index = sumsArray.findIndex(item => item.name === name);
+
+    // Si la entrada ya existe, sumar la duración; de lo contrario, agregar una nueva entrada
+    if (index !== -1) {
+      sumsArray[index].duration += duration;
+    } else {
+      sumsArray.push({ name, duration });
     }
+  });
 
-    // Inicializar un objeto para almacenar las sumas por nombre de datos
-    const sums = {};
+  // Ordenar el array por duración de mayor a menor
+  sumsArray.sort((a, b) => b.duration - a.duration);
 
-    // Iterar sobre los datos filtrados
-    filteredData.forEach(result => {
-      const name = result.dataName;
-      const duration = result.dataDuration;
+  // Convertir el array ordenado de nuevo a un objeto
+  const sortedSums = {};
+  sumsArray.forEach(item => {
+    sortedSums[item.name] = item.duration;
+  });
 
-      // Actualizar las sumas por nombre de datos
-      sums[name] = (sums[name] || 0) + duration;
-    });
-
-    // Actualizar el estado con las sumas por nombre de datos
-    setDataName(sums);
-  };
+  // Actualizar el estado con las sumas por nombre de datos ordenadas
+  setDataName(sortedSums);
+};
 
 
 
   // Puedes utilizar los datos filtrados fuera de la función handleSearch
   useEffect(() => {
     sumDataDuration();
+    sumSmartcardId()
     sumDataDurationByTimeSlot();
     dictDataDurationByDataName();
     channelsHoursByTimeSlot()
@@ -192,7 +229,7 @@ function DashOTT() {
             <div className="containerGeneralTables">
               <div className="containerGeneralTablesLeyenda">
                 <div>
-                  <p id="result">La suma total de dataDuration es: {generalDuration}</p>
+                  <p id="result"> para el presente informe se tomaron los registros desde la fecha {startDate} hasta {endDate} y nos arrojo que se vieron {generalDuration} segundos en {device} dispositivos </p>
                 </div>
               </div>
 
@@ -200,52 +237,29 @@ function DashOTT() {
               <div className='containerGeneralTables TableTimeZone'>
                 <div className='containerTableType tableTypeTimeZone'>
                   <table className='containerTable tableTimeZone'>
-                    <thead className='containerTableThead TableTheadTimezone'>
-                      <tr className='containerTableTr TableTrTimezone'>
+                    <thead className='containerTableThead TableTheadTimeZone'>
+                      <tr className='containerTableTr TableTrTimeZone'>
                         <th className='containerTableTh'>Franja horaria</th>
                         <th className='containerTableTh'>Suma de horas</th>
                       </tr>
                     </thead>
-                    <tbody className='containerTableTBody tableTBodyTimezone'>
-                      <tr className='containerTableTr tableTrTimezone'>
+                    <tbody className='containerTableTBody tableTBodyTimeZone'>
+                      <tr className='containerTableTr tableTrTimeZone'>
                         <td className='containerTableTh'>Mañana</td>
                         <td className='containerTableTh'>{sumByTimeSlot.Mañana}</td>
                       </tr>
-                      <tr className='containerTableTr tableTrTimezone'>
+                      <tr className='containerTableTr tableTrTimeZone'>
                         <td className='containerTableTh'>Tarde</td>
                         <td className='containerTableTh'>{sumByTimeSlot.Tarde}</td>
                       </tr>
-                      <tr className='containerTableTr tableTrTimezone'>
+                      <tr className='containerTableTr tableTrTimeZone'>
                         <td className='containerTableTh'>Noche</td>
                         <td className='containerTableTh'>{sumByTimeSlot.Noche}</td>
                       </tr>
-                      <tr className='containerTableTr tableTrTimezone'>
+                      <tr className='containerTableTr tableTrTimeZone'>
                         <td className='containerTableTh'>Madrugada</td>
                         <td className='containerTableTh'>{sumByTimeSlot.Madrugada}</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Duracion de los OTT*/}
-              <div className='containerGeneralTable TableOTT'>
-                <div className='containerTableType tableTypeOTT'>
-                  <h2 className='containerTittle'>Tabla de Resultados</h2>
-                  <table className='containerTable tableOTT'>
-                    <thead className='containerTableThead TableTheadOTT'>
-                      <tr className='containerTableTr TableTrOTT'>
-                        <th>Nombre de Canales</th>
-                        <th>Duración Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className='containerTableTBody TableTBodyOTT'>
-                      {Object.entries(dataName).map(([name, totalDuration]) => (
-                        <tr className='containerTableTr TableTrOTT' key={name}>
-                          <td className='containerTableTh'>{name}</td>
-                          <td className='containerTableTh'>{totalDuration}</td>
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -277,6 +291,30 @@ function DashOTT() {
                   </table>
                 </div>
               </div>
+
+              {/* Duracion de los OTT*/}
+              <div className='containerGeneralTable TableOTT'>
+                <div className='containerTableType tableTypeOTT'>
+                  <h2 className='containerTittle'>Tabla de Resultados</h2>
+                  <table className='containerTable tableOTT'>
+                    <thead className='containerTableThead TableTheadOTT'>
+                      <tr className='containerTableTr TableTrOTT'>
+                        <th>Nombre de Canales</th>
+                        <th>Duración Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className='containerTableTBody TableTBodyOTT'>
+                      {Object.entries(dataName).map(([name, totalDuration]) => (
+                        <tr className='containerTableTr TableTrOTT' key={name}>
+                          <td className='containerTableTh'>{name}</td>
+                          <td className='containerTableTh'>{totalDuration}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           )}
         </div>
