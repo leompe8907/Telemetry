@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Chart from 'chart.js/auto';
 import "./DashOTT.scss"
+import Chart from 'chart.js/auto';
+import 'chart.js/auto';
 
 function DashOTT() {
   const [startDate, setStartDate] = useState('');
@@ -10,8 +11,8 @@ function DashOTT() {
   const [dataNameCounts, setDataNameCounts] = useState([]);
   const [dataNameSumDurations, setDataNameSumDurations] = useState([]);
   const [dataNameAverages, setDataNameAverages] = useState([]);
-  
   const [timeSlotSumDurations, setTimeSlotSumDurations] = useState({Mañana: 0,Tarde: 0,Noche: 0,});
+  
   const [smartcardChartData, setSmartcardChartData] = useState(null);
   const [dataNameChartData, setDataNameChartData] = useState(null);
   const [dataDurationChartData, setDataDurationChartData] = useState(null);
@@ -265,24 +266,6 @@ function DashOTT() {
       const ctx = document.getElementById(canvasId).getContext('2d');
       new Chart(ctx, data);
     };
-     // Crear o actualizar el gráfico de smartcardId
-     if (smartcardChartData) {
-      const colors = generateRandomColors(smartcardChartData.length); // Una función para generar colores aleatorios
-    
-      createOrUpdateChart('smartcardChart', {
-        type: 'pie',
-        data: {
-          labels: smartcardChartData.map((data) => data.smartcardId),
-          datasets: [{
-            label: 'Número de veces',
-            data: smartcardChartData.map((data) => data.count),
-            backgroundColor: colors,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-          }],
-        },
-      });
-    }
     
     // Función para generar colores aleatorios
     function generateRandomColors(numColors) {
@@ -301,6 +284,25 @@ function DashOTT() {
       const b = Math.floor(Math.random() * 256);
       const alpha = 0.6; // Puedes ajustar la transparencia según tus preferencias
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+         // Crear o actualizar el gráfico de smartcardId
+    if (smartcardChartData) {
+      const colors = generateRandomColors(smartcardChartData.length); // Una función para generar colores aleatorios
+    
+      createOrUpdateChart('smartcardChart', {
+        type: 'pie',
+        data: {
+          labels: smartcardChartData.map((data) => data.smartcardId),
+          datasets: [{
+            label: 'Número de veces',
+            data: smartcardChartData.map((data) => data.count),
+            backgroundColor: colors,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          }],
+        },
+      });
     }
 
     // Crear o actualizar el gráfico de dataName
