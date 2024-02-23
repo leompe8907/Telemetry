@@ -9,5 +9,3 @@ baseUrl : "https://cv01.panaccess.com"
 cvToken = "bnctZTHpigaMzLhfdRVJ";
 cvPass	123NbnB!
 cvUser	nbr_sw4
-
-RSO

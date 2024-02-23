@@ -325,6 +325,10 @@ function DashOTT() {
       }
     }
 
+    if(sumChannelTimeSlot){
+      
+    }
+
     },[sumByTimeSlot, dataName])
 
   return (
@@ -419,25 +423,29 @@ function DashOTT() {
               {/* Duracion de los OTT*/}
               <div className='containerGeneralTable TableOTT'>
                 <div className='containerTableType tableTypeOTT'>
-                  <h2 className='containerTittle'>Tabla de Resultados</h2>
-                  <table className='containerTable tableOTT'>
-                    <thead className='containerTableThead TableTheadOTT'>
-                      <tr className='containerTableTr TableTrOTT'>
-                        <th>Nombre de Canales</th>
-                        <th>Duración Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className='containerTableTBody TableTBodyOTT'>
-                      {Object.entries(dataName).map(([name, totalDuration]) => (
-                        <tr className='containerTableTr TableTrOTT' key={name}>
-                          <td className='containerTableTh'>{name}</td>
-                          <td className='containerTableTh'>{totalDuration}</td>
+                  <div className='containerTableType tableTypeOTT tittle'>
+                    <h2 className='containerTittle'>Tabla de Resultados</h2>
+                  </div>
+                  <div className='containerTableType tableTypeOTT boddy'>
+                    <table className='containerTable tableOTT'>
+                      <thead className='containerTableThead TableTheadOTT'>
+                        <tr className='containerTableTr TableTrOTT'>
+                          <th>Nombre de Canales</th>
+                          <th>Duración Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className='containerTableTBody TableTBodyOTT'>
+                        {Object.entries(dataName).map(([name, totalDuration]) => (
+                          <tr className='containerTableTr TableTrOTT' key={name}>
+                            <td className='containerTableTh'>{name}</td>
+                            <td className='containerTableTh'>{totalDuration}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div className='containerGraphType'>
+                <div className='containerGraphType graficaOTT'>
                   <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
                   <canvas id="dataName"></canvas>
                 </div>
