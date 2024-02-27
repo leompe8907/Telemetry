@@ -134,7 +134,7 @@ const Telemetria = () => {
               actionId,
               actionKey,
               date,
-              timestamp: timestampMilliseconds,
+              timestamp,
               manual,
               reaonId,
               reasonKey,
