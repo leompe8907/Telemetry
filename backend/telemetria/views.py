@@ -4,7 +4,7 @@ from django.views.decorators.http import require_POST # Importa el decorador req
 from django.http import JsonResponse # Importa la función JsonResponse de Django para devolver respuestas HTTP en formato JSON
 from rest_framework.views import APIView # Importa la clase APIView de Django REST framework para crear vistas basadas en clases
 from rest_framework import viewsets # Importa la clase viewsets de Django REST framework para definir vistas de conjunto
-from .serializer import TelemetriaSerializer # Importa el serializador TelemetriaSerializer desde el módulo actual
+from .serializer import TelemetriaSerializer, MergedTelemetricActionId8Serializer # Importa el serializador TelemetriaSerializer desde el módulo actual
 from .models import Telemetria, MergedTelemetricActionId8 # Importa el modelo Telemetria desde el módulo actual
 import json # Importa el módulo json para trabajar con datos JSON
 from datetime import datetime
@@ -107,29 +107,9 @@ class ProcessMergedDataView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-#    @staticmethod
-#    @transaction.atomic
-#    def create_merged_records(merged_data):
-#        new_records = []
+class DataAccionId8(APIView):
+    def get(self, request, *args, **kwargs):
+        data = MergedTelemetricActionId8.objects.all()
+        serializer = MergedTelemetricActionId8Serializer(data, many=True)  # Asegúrate de utilizar tu propio serializador
 
-#        for i in merged_data:
-#            existing_record = MergedTelemetricActionId8.objects.filter(recordId=i.get('recordId')).first()
-
-#            if not existing_record:
-#                new_record = MergedTelemetricActionId8(**i)
-#                new_records.append(new_record)
-
-#        MergedTelemetricActionId8.objects.bulk_create(new_records)
-
-#    @csrf_exempt
-#    @require_POST
-#    def post(self, request):
-#        try:
-#            merged_data = self.filter_and_sum_data()
-#            self.create_merged_records(merged_data)
-
-#            return JsonResponse({'status': 'success', 'message': 'No duplicates found'})
-#        except ValueError:
-#            return JsonResponse({'status': 'error', 'message': 'Error de formato de datos'})
-#        except Exception as e:
-#            return JsonResponse({'status': 'error', 'message': str(e)})
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -4,7 +4,7 @@ import axios from 'axios';
 function Lamada() {
   useEffect(() => {
     // Realizar la conexión con la API
-    const response = axios.post(`http://localhost:8000/telemetria/mergeddata/`);
+    const response = axios.post(`http://localhost:8000/telemetria/merged/`);
 
     console.log(response)
 
