@@ -1,6 +1,4 @@
 from pathlib import Path
-from celery import Celery
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +25,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'celery',
     'corsheaders',
     'rest_framework',
     'telemetria',
@@ -126,18 +123,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #cors autorizacion
 CORS_ALLOW_ALL_ORIGINS = True
-
-
-# Configuración de Celery
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TIMEZONE = 'UTC'
-#CELERY_TASK_SERIALIZER = 'json'
-#CELERY_RESULT_SERIALIZER = 'json'
-#CELERY_BEAT_SCHEDULE = {
-#    'process-merged-data-every-hour': {
-#        'task': 'app.tasks.process_merged_data',
-#        'schedule': 3600,  # Ejecutar cada hora (en segundos)
-#    },
-#}

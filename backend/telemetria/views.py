@@ -1,15 +1,15 @@
 # Create your views here.
-from datetime import datetime
-from rest_framework.response import Response # Importa la clase Response de Django REST framework para manejar respuestas HTTP
-from rest_framework.views import APIView # Importa la clase APIView de Django REST framework para crear vistas basadas en clases
+from django.views.decorators.csrf import csrf_exempt # Importa el decorador csrf_exempt para deshabilitar la protección CSRF en la vista
+from django.views.decorators.http import require_POST # Importa el decorador require_POST para limitar las solicitudes HTTP a POST
 from django.http import JsonResponse # Importa la función JsonResponse de Django para devolver respuestas HTTP en formato JSON
+from rest_framework.views import APIView # Importa la clase APIView de Django REST framework para crear vistas basadas en clases
 from rest_framework import viewsets # Importa la clase viewsets de Django REST framework para definir vistas de conjunto
 from .serializer import TelemetriaSerializer # Importa el serializador TelemetriaSerializer desde el módulo actual
 from .models import Telemetria, MergedTelemetricActionId8 # Importa el modelo Telemetria desde el módulo actual
-from django.views.decorators.http import require_POST # Importa el decorador require_POST para limitar las solicitudes HTTP a POST
-from django.views.decorators.csrf import csrf_exempt # Importa el decorador csrf_exempt para deshabilitar la protección CSRF en la vista
-from rest_framework import status
 import json # Importa el módulo json para trabajar con datos JSON
+from datetime import datetime
+from rest_framework import status
+from rest_framework.response import Response # Importa la clase Response de Django REST framework para manejar respuestas HTTP
 
 
 # Define una vista de conjunto usando Django REST framework
@@ -72,20 +72,15 @@ def DataTelemetria(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
-class MergedTelemetricData(APIView):    
+class MergedTelemetricData(APIView):
     @staticmethod
-    def filterAndSumData():
-        # Obtener datos filtrados por actionId=7
+    def FilterAndSumData():
         telemetria_data_actionid7 = Telemetria.objects.filter(actionId=7)
-        
-        # Obtener datos filtrados por actionId=8
         telemetria_data_actionid8 = Telemetria.objects.filter(actionId=8)
         
-        # Serializar los datos
         serialized_data_actionid7 = TelemetriaSerializer(telemetria_data_actionid7, many=True).data
         serialized_data_actionid8 = TelemetriaSerializer(telemetria_data_actionid8, many=True).data
         
-        # Fusionar los datos
         merged_data = []
         for item8 in serialized_data_actionid8:
             matching_item7 = next((item7 for item7 in serialized_data_actionid7 if item7['dataId'] == item8['dataId']), None)
@@ -93,56 +88,48 @@ class MergedTelemetricData(APIView):
                 item8['dataName'] = matching_item7['dataName']
             merged_data.append(item8)
 
-        return Response({'all_data': merged_data})
+        # Verificar y almacenar en la base de datos
+        for merged_item in merged_data:
+            record_id = merged_item.get('recordId')
+            if record_id and not MergedTelemetricActionId8.objects.filter(recordId=record_id).exists():
+                # Si el recordId no está en la base de datos, almacenarlo
+                MergedTelemetricActionId8.objects.create(**merged_item)
+        
+        return merged_data
 
-    @csrf_exempt
-    @require_POST
-    def DataActionId8(request):
+class ProcessMergedDataView(APIView):
+    def post(self, request, *args, **kwargs):
         try:
-            merged_data = MergedTelemetricData.filterAndSumData()
-            for i in merged_data:
-                # Crear el existing_record dentro del bucle
-                existing_record = MergedTelemetricActionId8.objects.filter(recordId=i.get('recordId')).first()
-                # Verificar si el registro ya existe
-                if existing_record:
-                    # Si el registro ya existe, continua con el próximo elemento en merged_data
-                    continue
-                # Si el registro no existe, crea una nueva instancia de MergedTelemetricActionId8
-                new_record = MergedTelemetricActionId8(
-                    actionId=i.get('actionId'),
-                    actionKey=i.get('actionKey'),
-                    anonymized=i.get('anonymized'),
-                    data=i.get('data'),
-                    dataDuration=i.get('dataDuration'),
-                    dataId=i.get('dataId'),
-                    dataName=i.get('dataName'),
-                    dataNetId=i.get('dataNetId'),
-                    dataPrice=i.get('dataPrice'),
-                    dataSeviceId=i.get('dataSeviceId'),
-                    dataTsId=i.get('dataTsId'),
-                    date=i.get('date'),
-                    deviceId=i.get('deviceId'),
-                    ip=i.get('ip'),
-                    ipId=i.get('ipId'),
-                    manual=i.get('manual'),
-                    profileId=i.get('profileId'),
-                    reaonId=i.get('reaonId'),
-                    reasonKey=i.get('reasonKey'),
-                    recordId=i.get('recordId'),
-                    smartcardId=i.get('smartcardId'),
-                    subscriberCode=i.get('subscriberCode'),
-                    timestamp=i.get('timestamp'),
-                    dataDate=i.get('dataDate'),
-                    timeDate=i.get('timeDate'),
-                    whoisCountry=i.get('whoisCountry'),
-                    whoisIsp=i.get('whoisIsp')
-                )
-    
-                # Guardar la nueva instancia en la base de datos
-                new_record.save()
+            # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
+            merged_data = MergedTelemetricData.FilterAndSumData()
 
-            # Si el bucle se completa sin encontrar duplicados, devolver una respuesta de éxito
-            return JsonResponse({'status': 'success', 'message': 'No duplicates found'})
+            return Response({"message": merged_data }, status=status.HTTP_200_OK)
         except Exception as e:
-            # En caso de cualquier otro error, devuelve una respuesta de error con un mensaje
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#    @staticmethod
+#    @transaction.atomic
+#    def create_merged_records(merged_data):
+#        new_records = []
+
+#        for i in merged_data:
+#            existing_record = MergedTelemetricActionId8.objects.filter(recordId=i.get('recordId')).first()
+
+#            if not existing_record:
+#                new_record = MergedTelemetricActionId8(**i)
+#                new_records.append(new_record)
+
+#        MergedTelemetricActionId8.objects.bulk_create(new_records)
+
+#    @csrf_exempt
+#    @require_POST
+#    def post(self, request):
+#        try:
+#            merged_data = self.filter_and_sum_data()
+#            self.create_merged_records(merged_data)
+
+#            return JsonResponse({'status': 'success', 'message': 'No duplicates found'})
+#        except ValueError:
+#            return JsonResponse({'status': 'error', 'message': 'Error de formato de datos'})
+#        except Exception as e:
+#            return JsonResponse({'status': 'error', 'message': str(e)})

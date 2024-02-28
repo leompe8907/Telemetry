@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
-import setMergedData  from "./Prueba";
+import axios from 'axios';
 
 function Lamada() {
   useEffect(() => {
-    // Llama a la función setMergedData
-    setMergedData(/* pasas los argumentos si es necesario */);
+    // Realizar la conexión con la API
+    const response = axios.post(`http://localhost:8000/telemetria/mergeddata/`);
 
-    // Si setMergedData actualiza un estado en Prueba.js, podrías imprimir el estado actualizado
-    // Puedes modificar el siguiente código según la estructura de tu estado y la información que desees imprimir
-    console.log('Estado actualizado desde setMergedData:', setMergedData());
+    console.log(response)
+
   }, []);
 
   return (

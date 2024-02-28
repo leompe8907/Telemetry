@@ -1,8 +1,10 @@
 from celery import shared_task
+from celery.schedules import crontab
 from telemetria.views import MergedTelemetricData  # Ajusta la importación según la ubicación real
 from .models import MergedTelemetricActionId8
 
 @shared_task
+@celery.schedules.crontab(minute='02', hour='19')
 def DataActionId8(request):
     new_records = []
     try:
