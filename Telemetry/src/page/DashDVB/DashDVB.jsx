@@ -52,7 +52,7 @@ function DashDVB() {
   const handleSearch = async () => {
     try {
       // Realizar la conexión con la API
-      axios.get(`http://localhost:8000/telemetria/mergedOTT/`)
+      axios.get(`http://localhost:8000/telemetria/mergedDVB/`)
       .then(response => {
         console.log('Datos recibidos:', response.data);
 

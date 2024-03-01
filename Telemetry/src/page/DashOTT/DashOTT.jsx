@@ -52,7 +52,7 @@ function DashOTT() {
   const handleSearch = async () => {
     try {
       // Realizar la conexión con la API
-      axios.get(`http://localhost:8000/telemetria/mergedDVB/`)
+      axios.get(`http://localhost:8000/telemetria/mergedOTT/`)
       .then(response => {
         console.log('Datos recibidos:', response.data);
 
@@ -77,8 +77,6 @@ function DashOTT() {
       // También podrías manejar el estado de formSubmitted aquí si deseas
     }
   };
-
-
 
   // Función para sumar el parámetro dataDuration de los objetos filtrados
   const sumDataDuration = () => {
