@@ -393,14 +393,10 @@ function DashOTT() {
                       </tbody>
                     </table>
                   </div>
-                  <div className='containerGraphType'>
-                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
-                    <canvas id="sumByTimeSlot"></canvas>
-                  </div>
                 </div>
             
                 {/* Canales por franja horaria */}
-                <div className='containerGeneralTable'>
+                <div className='containerGeneralTable TablaOTT'>
                   <div className='containerTableType'>
                     <h2 className='containerTittle'>Tabla de Resultados por Franja Horaria y DataName</h2>
                     <table className='containerTable'>
@@ -423,6 +419,10 @@ function DashOTT() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                  <div className='containerGraphType'>
+                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
+                    <canvas id="sumByTimeSlot"></canvas>
                   </div>
                 </div>
                           

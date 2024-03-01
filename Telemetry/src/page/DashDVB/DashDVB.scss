@@ -39,83 +39,83 @@
                 -moz-border-radius: 15px 15px 15px 15px;
                 border: 1px solid;
 
-            .containerForm{
-                display: flex;
-                justify-content: space-evenly;
-                align-items: center;
-                width: 100%;
-                
-                .containerInput{
+                .containerForm{
                     display: flex;
-                    flex-direction: column;
+                    justify-content: space-evenly;
                     align-items: center;
-                    .date{
-                        margin-bottom: 4px;
-                        font-size: larger;
-                        font-style: inherit;
-                        font-weight: 500;
-                        font-family: serif;
-                    }
-                    #startDate, #endDate{
-                        height: 25px;
-                        width: 100px;
-                    }
-                }
-                .button{
-                    border-radius: 9px;
-                    height: 40px;
-                    width: 82px;
-                }
-                .button:hover{
-                    background-color: black;
-                    color: white;
-                }
-            }
-        }
-
-        .containerGeneralTable{
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            width: 100%;
-            background-color: #fdfdfd;
-            flex-wrap: nowrap;
-            align-items: center;
-            margin-top: 40px;
-            
-            .containerTableType{
-                width: 50%;
-                .containerTittle{
-                    text-align: center;
-                }
-                .containerTable{
                     width: 100%;
-                    .containerTableThead{
-                        height: 30px;
-                        .containerTableTr{
-                            width: 100%;
-                            text-align: center;
+
+                    .containerInput{
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        .date{
+                            margin-bottom: 4px;
+                            font-size: larger;
+                            font-style: inherit;
+                            font-weight: 500;
+                            font-family: serif;
+                        }
+                        #startDate, #endDate{
+                            height: 25px;
+                            width: 100px;
                         }
                     }
-                    .containerTableTBody{
-                        height: 440px;
+                    .button{
+                        border-radius: 9px;
+                        height: 40px;
+                        width: 82px;
+                    }
+                    .button:hover{
+                        background-color: black;
+                        color: white;
+                    }
+                }
+            }
+
+            .containerGeneralTable{
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+                width: 100%;
+                background-color: #fdfdfd;
+                flex-wrap: nowrap;
+                align-items: center;
+                margin-top: 40px;
+
+                .containerTableType{
+                    width: 50%;
+                    .containerTittle{
+                        text-align: center;
+                    }
+                    .containerTable{
                         width: 100%;
-                        .containerTableTr{
-                            text-align: center;
+                        .containerTableThead{
+                            height: 30px;
+                            .containerTableTr{
+                                width: 100%;
+                                text-align: center;
+                            }
+                        }
+                        .containerTableTBody{
+                            height: 440px;
+                            width: 100%;
+                            .containerTableTr{
+                                text-align: center;
+                            }
                         }
                     }
                 }
             }
-        }
-        .Leyendas{
-            margin: 0px;
-            padding: 0px;
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-        }
+            .Leyendas{
+                margin: 0px;
+                padding: 0px;
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
             .TableTimeZone{
                 .tableTypeTimeZone{
                     height: auto;

@@ -395,10 +395,6 @@ function DashDVB() {
                       </tbody>
                     </table>
                   </div>
-                  <div className='containerGraphType'>
-                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
-                    <canvas id="sumByTimeSlot"></canvas>
-                  </div>
                 </div>
             
                 {/* Canales por franja horaria */}
@@ -425,6 +421,10 @@ function DashDVB() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                  <div className='containerGraphType'>
+                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
+                    <canvas id="sumByTimeSlot"></canvas>
                   </div>
                 </div>
                           
