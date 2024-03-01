@@ -12,7 +12,7 @@ const NavBar = () => {
           <Link to="/dashott" className='navbar-link'>OTT</Link>
         </li>
         <li className='navbar-item'>
-          <Link to="/cast" className='navbar-link'>DVB / MultiCast</Link>
+          <Link to="/dashdvb" className='navbar-link'>DVB / MultiCast</Link>
         </li>
         <li className='navbar-item'>
           <Link to="/vod" className='navbar-link'>VOD</Link>

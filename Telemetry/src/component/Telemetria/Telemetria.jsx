@@ -4,14 +4,12 @@ import { CV } from "../../cv/cv";
 const Telemetria = () => {
   const [telemetriaData, setTelemetriaData] = useState([]);
   const [sentRecordIds, setSentRecordIds] = useState(new Set());
-  const [stopFetching, setStopFetching] = useState(true); // Bandera para detener el bucle
-  const limit = 1000; // parámetro de función que indica el limite de registro a traer por consulta
+  const [stopFetching, setStopFetching] = useState(true);
 
+  const limit = 1000;
 
-  // Función para obtener datos de telemetría desde CV
   const fetchTelemetriaData = async (pageNumber) => {
     try {
-      // Llamada a CV para obtener la lista de registros de telemetría
       const result = await new Promise((resolve) => {
         CV.call(
           "getListOfTelemetryRecords",
@@ -27,168 +25,80 @@ const Telemetria = () => {
       });
 
       if (result.success) {
-        // Filtra registros no enviados previamente
         const newTelemetryRecords = result.answer.telemetryRecordEntries.filter(
           (record) => !sentRecordIds.has(record.recordId)
         );
 
-        // Actualiza los IDs de registros enviados
-        setSentRecordIds((prevIds) => new Set([...prevIds, ...newTelemetryRecords.map((record) => record.recordId)]));
-        // Agrega nuevos registros a la lista actual
-        setTelemetriaData((prevData) => [...prevData, ...newTelemetryRecords]);
+        const modifiedTelemetryRecords = newTelemetryRecords.map((record) => ({
+          ...record,
+          dataDate: obtenerFechaFormateada(record.timestamp),
+          timeDate: obtenerHoraFormateada(record.timestamp),
+        }));
 
-        // Envía datos a Django solo si no hay registros duplicados
+        setSentRecordIds((prevIds) => new Set([...prevIds, ...modifiedTelemetryRecords.map((record) => record.recordId)]));
+        setTelemetriaData((prevData) => [...prevData, ...modifiedTelemetryRecords]);
+
         if (!result.answer.hasDuplicate) {
-          await sendDataToDjango(newTelemetryRecords);
+          await sendDataToDjango(modifiedTelemetryRecords);
           // Continúa la lógica aquí si es necesario
         } else {
-          // Detén la consulta o maneja la lógica correspondiente si hay registros duplicados
           console.log('Deteniendo la consulta debido a registros duplicados');
-          setStopFetching(true); // Establece la bandera para detener el bucle
+          setStopFetching(true);
           throw new Error('Registros duplicados encontrados. Deteniendo la consulta.');
         }
 
         return result;
       } else {
-        // Manejo de errores al obtener datos de telemetría
         console.error('Failed to fetch result:', result.errorMessage);
         return result;
       }
     } catch (error) {
-      // Manejo de errores generales al obtener datos de telemetría
       console.error('Error fetching telemetry data:', error);
       return { success: false, errorMessage: error.message };
     }
   };
 
-  // Función para enviar datos de telemetría a Django
   const sendDataToDjango = async (telemetryData) => {
     try {
-      // Itera sobre cada registro y envíalo a Django
-      for (const telemetryRecord of telemetryData) {
-        // Desestructura el registro para obtener sus propiedades
-        const {
-          recordId,
-          subscriberCode,
-          deviceId,
-          smartcardId,
-          anonymized,
-          actionId,
-          actionKey,
-          date,
-          timestamp,
-          manual,
-          reaonId,
-          reasonKey,
-          dataNetId,
-          dataTsId,
-          dataSeviceId,
-          dataId,
-          dataName,
-          dataPrice,
-          dataDuration,
-          whoisCountry,
-          whoisIsp,
-          ipId,
-          ip,
-          profileId
-        } = telemetryRecord;
+      const result = await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(telemetryData),
+      });
 
-        const data = new Date(timestamp);
-        const hora = data.getHours()
-        const min = data.getMinutes()
-        const sec = data.getSeconds()
-        const time = `${hora}:${min}:${sec}`
-        const fecha = data.toISOString().split('T')[0]
-        const timestampMilliseconds = data.getTime();
-        
-        // Asigna los valores divididos al objeto telemetryRecord
-        telemetryRecord.dataDate = fecha;
-        telemetryRecord.timeDate = time;
-        
-        
-        console.log("Record ID:", recordId);
-        console.log("Subscriber Code:", subscriberCode);
-        console.log(timestamp)
-        console.log("data: ",data)
-        console.log("fecha: ",fecha)
-        console.log("hora: ",time)
-        console.log(typeof(hora))
-        console.log("milisegundos",timestampMilliseconds)
-
-
-        let result;
-        try {
-          // Realiza una solicitud HTTP para enviar datos a Django
-          result = await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              recordId,
-              subscriberCode,
-              deviceId,
-              smartcardId,
-              anonymized,
-              actionId,
-              actionKey,
-              date,
-              timestamp,
-              manual,
-              reaonId,
-              reasonKey,
-              dataNetId,
-              dataTsId,
-              dataSeviceId,
-              dataId,
-              dataName,
-              dataPrice,
-              dataDuration,
-              whoisCountry,
-              whoisIsp,
-              ipId,
-              ip,
-              profileId,
-              dataDate: fecha,
-              timeDate: hora,
-            }),
-          });
-        } catch (error) {
-          // Manejo de errores en la solicitud HTTP
-          console.error('Error en la solicitud HTTP:', error);
-          throw error;
+      let responseData;
+      try {
+        responseData = await result.json();
+        if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
+          console.log('Deteniendo la consulta debido a registros duplicados');
+          setStopFetching(true);
+          return;
         }
-
-        let responseData;
-        try {
-          // Analiza la respuesta JSON
-          responseData = await result.json();
-          // Verifica si la respuesta indica un duplicado
-          if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
-            console.log('Deteniendo la consulta debido a registros duplicados');
-            setStopFetching(true); // Establece la bandera para detener el bucle
-            return; // Sal del bucle
-          }
-        } catch (error) {
-          // Manejo de errores al analizar la respuesta JSON
-          console.error('Error al analizar la respuesta JSON:', error);
-          throw error;
-        }
-
-        // Muestra información de la respuesta de Django en la consola
-        console.log('Resultado de data_telemetria:', responseData);
+      } catch (error) {
+        console.error('Error al analizar la respuesta JSON:', error);
+        throw error;
       }
 
-      return { success: true };
+      console.log('Resultado de data_telemetria:', responseData);
     } catch (error) {
-      // Manejo de errores durante el envío de datos a Django
       console.error('Error al enviar datos a Django:', error);
       return { success: false, errorMessage: error.message };
     }
   };
 
-  // Efecto secundario para cargar datos de telemetría al montar el componente
+  const obtenerFechaFormateada = (timestamp) => {
+    const fecha = new Date(timestamp);
+    return fecha.toISOString().split('T')[0];
+  };
+
+  const obtenerHoraFormateada = (timestamp) => {
+    const data = new Date(timestamp);
+    const hora = data.getHours();
+    return hora;
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       let pageNumber = 0;
@@ -199,14 +109,12 @@ const Telemetria = () => {
           pageNumber += limit;
         }
       } catch (error) {
-        // Manejo de errores al obtener datos de telemetría
         console.error('Error fetching telemetry data:', error);
       }
     };
 
     fetchAllData();
   }, [stopFetching]);
-
 };
 
 export default Telemetria;

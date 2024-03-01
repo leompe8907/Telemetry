@@ -1,6 +1,6 @@
 ## permite convertir los modelos en json
 from rest_framework import serializers
-from .models import Telemetria, MergedTelemetricActionId8
+from .models import Telemetria, MergedTelemetricOTT, MergedTelemetricDVB
 
 class TelemetriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,12 @@ class TelemetriaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MergedTelemetricActionId8Serializer(serializers.ModelSerializer):
+class MergedTelemetricOTTSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MergedTelemetricActionId8
+        model = MergedTelemetricOTT
+        fields = '__all__'
+
+class MergedTelemetricDVBSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MergedTelemetricDVB
         fields = '__all__'

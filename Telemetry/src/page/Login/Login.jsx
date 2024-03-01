@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import md5 from "md5"
 import {CV} from "../../cv/cv"
 import Logo from "../../Media/Img/logoB.png"
+import {useNavigate } from 'react-router-dom'
 import "./Login.scss"
 
 
@@ -9,6 +10,8 @@ function Login() {
   const cvToken = "bnctZTHpigaMzLhfdRVJ";
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+
+  const navigate = useNavigate()
 
   function loginFailed(reason) {
     console.log(reason);
@@ -48,6 +51,7 @@ function Login() {
           localStorage.setItem("cvPass",password)
           localStorage.setItem("cvToken",cvToken)
           onWindLoad()
+          navigate('/telemetria')
         }else{
             alert("failed to fetch result"+result["errorMessage"])
         }

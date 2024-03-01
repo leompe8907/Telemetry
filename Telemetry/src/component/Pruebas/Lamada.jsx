@@ -4,9 +4,12 @@ import axios from 'axios';
 function Lamada() {
   useEffect(() => {
     // Realizar la conexión con la API
-    const response = axios.post(`http://localhost:8000/telemetria/merged/`);
+    const OTT = axios.post(`http://localhost:8000/telemetria/mergeddataOTT/`);
+    console.log(OTT)
 
-    console.log(response)
+    const DVB = axios.post(`http://localhost:8000/telemetria/mergeddataDVB/`);
+    console.log(DVB)
+
 
   }, []);
 

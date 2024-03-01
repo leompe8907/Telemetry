@@ -1,15 +1,14 @@
-# Create your views here.
-from django.views.decorators.csrf import csrf_exempt # Importa el decorador csrf_exempt para deshabilitar la protección CSRF en la vista
-from django.views.decorators.http import require_POST # Importa el decorador require_POST para limitar las solicitudes HTTP a POST
-from django.http import JsonResponse # Importa la función JsonResponse de Django para devolver respuestas HTTP en formato JSON
-from rest_framework.views import APIView # Importa la clase APIView de Django REST framework para crear vistas basadas en clases
-from rest_framework import viewsets # Importa la clase viewsets de Django REST framework para definir vistas de conjunto
-from .serializer import TelemetriaSerializer, MergedTelemetricActionId8Serializer # Importa el serializador TelemetriaSerializer desde el módulo actual
-from .models import Telemetria, MergedTelemetricActionId8 # Importa el modelo Telemetria desde el módulo actual
-import json # Importa el módulo json para trabajar con datos JSON
-from datetime import datetime
+# Importa las bibliotecas y módulos necesarios
+from django.views.decorators.csrf import csrf_exempt  # Desactiva la protección CSRF
+from django.views.decorators.http import require_POST  # Requiere que la solicitud sea de tipo POST
+from django.http import JsonResponse  # Devuelve respuestas HTTP en formato JSON
+from rest_framework.views import APIView  # Clase base para vistas basadas en clases en Django REST framework
+from rest_framework import viewsets  # Clase para definir vistas de conjunto en Django REST framework
+from .serializer import TelemetriaSerializer, MergedTelemetricOTTSerializer, MergedTelemetricDVBSerializer  # Importa los serializadores necesarios
+from .models import Telemetria, MergedTelemetricOTT, MergedTelemetricDVB  # Importa los modelos necesarios
+import json  # Módulo para trabajar con datos JSON
 from rest_framework import status
-from rest_framework.response import Response # Importa la clase Response de Django REST framework para manejar respuestas HTTP
+from rest_framework.response import Response  # Clase para manejar respuestas HTTP
 
 
 # Define una vista de conjunto usando Django REST framework
@@ -23,93 +22,174 @@ class TelemetriaViewSet(viewsets.ModelViewSet):
 def DataTelemetria(request):
     try:
         # Parsea los datos del cuerpo de la solicitud como JSON
-        data = json.loads(request.body.decode('utf-8'))
-        
-        # Verificar si el registro ya existe en la base de datos
-        existing_record = Telemetria.objects.filter(recordId=data.get('recordId')).first()
+        data_batch = json.loads(request.body.decode('utf-8'))
 
-        if existing_record:
-            # Si el registro ya existe, devuelve una respuesta indicando que es un duplicado
-            return JsonResponse({'status': 'success', 'message': 'Duplicate record'})
+        # Lista para almacenar respuestas individuales para cada registro en el lote
+        responses = []
 
-        # Crea una instancia de Telemetria con los datos proporcionados
-        telemetria = Telemetria(
-            actionId=data.get('actionId'),
-            actionKey=data.get('actionKey'),
-            anonymized=data.get('anonymized'),
-            dataDuration=data.get('dataDuration'),
-            dataId=data.get('dataId'),
-            dataName=data.get('dataName'),
-            dataNetId=data.get('dataNetId'),
-            dataPrice=data.get('dataPrice'),
-            dataSeviceId=data.get('dataSeviceId'),
-            dataTsId=data.get('dataTsId'),
-            date=data.get('date'),
-            deviceId=data.get('deviceId'),
-            ip=data.get('ip'),
-            ipId=data.get('ipId'),
-            manual=data.get('manual'),
-            profileId=data.get('profileId'),
-            reaonId=data.get('reaonId'),
-            reasonKey=data.get('reasonKey'),
-            recordId=data.get('recordId'),
-            smartcardId=data.get('smartcardId'),
-            subscriberCode=data.get('subscriberCode'),
-            timestamp=data.get('timestamp'),
-            dataDate=data.get('dataDate'),
-            timeDate=data.get('timeDate'),
-            whoisCountry=data.get('whoisCountry'),
-            whoisIsp=data.get('whoisIsp')
-        )
+        for data in data_batch:
+            # Verificar si el registro ya existe en la base de datos
+            existing_record = Telemetria.objects.filter(recordId=data.get('recordId')).first()
 
-         # Guarda la instancia de Telemetria en la base de datos
-        telemetria.save()
+            if existing_record:
+                # Si el registro ya existe, agrega una respuesta indicando que es un duplicado
+                responses.append({'status': 'success', 'message': 'Duplicate record'})
+            else:
+                # Crea una instancia de Telemetria con los datos proporcionados
+                telemetria = Telemetria(
+                    actionId=data.get('actionId'),
+                    actionKey=data.get('actionKey'),
+                    anonymized=data.get('anonymized'),
+                    dataDuration=data.get('dataDuration'),
+                    dataId=data.get('dataId'),
+                    dataName=data.get('dataName'),
+                    dataNetId=data.get('dataNetId'),
+                    dataPrice=data.get('dataPrice'),
+                    dataSeviceId=data.get('dataSeviceId'),
+                    dataTsId=data.get('dataTsId'),
+                    date=data.get('date'),
+                    deviceId=data.get('deviceId'),
+                    ip=data.get('ip'),
+                    ipId=data.get('ipId'),
+                    manual=data.get('manual'),
+                    profileId=data.get('profileId'),
+                    reaonId=data.get('reaonId'),
+                    reasonKey=data.get('reasonKey'),
+                    recordId=data.get('recordId'),
+                    smartcardId=data.get('smartcardId'),
+                    subscriberCode=data.get('subscriberCode'),
+                    timestamp=data.get('timestamp'),
+                    dataDate=data.get('dataDate'),
+                    timeDate=data.get('timeDate'),
+                    whoisCountry=data.get('whoisCountry'),
+                    whoisIsp=data.get('whoisIsp')
+                )
+                # Guarda la instancia de Telemetria en la base de datos
+                telemetria.save()
 
-        # Devuelve una respuesta de éxito
-        return JsonResponse({'status': 'success'})
+                # Agrega una respuesta de éxito para este registro
+                responses.append({'status': 'success'})
+
+        # Devuelve las respuestas para cada registro en el lote
+        return JsonResponse(responses, safe=False)
     except Exception as e:
         # En caso de error, devuelve una respuesta de error con un mensaje
         return JsonResponse({'status': 'error', 'message': str(e)})
 
-
-class MergedTelemetricData(APIView):
+class MergedDataOTT(APIView):
     @staticmethod
     def FilterAndSumData():
+        # Filtra los datos de Telemetria con actionId 7 y 8
         telemetria_data_actionid7 = Telemetria.objects.filter(actionId=7)
         telemetria_data_actionid8 = Telemetria.objects.filter(actionId=8)
-        
+
+        # Serializa los datos obtenidos
         serialized_data_actionid7 = TelemetriaSerializer(telemetria_data_actionid7, many=True).data
         serialized_data_actionid8 = TelemetriaSerializer(telemetria_data_actionid8, many=True).data
-        
+
+        # Lista para almacenar los datos fusionados
         merged_data = []
+
+        # Itera sobre los datos con actionId 8
         for item8 in serialized_data_actionid8:
+            # Busca un elemento coincidente en los datos con actionId 7
             matching_item7 = next((item7 for item7 in serialized_data_actionid7 if item7['dataId'] == item8['dataId']), None)
+            
+            # Si hay coincidencia, agrega la propiedad 'dataName' de actionId 7 a los datos de actionId 8
             if matching_item7:
                 item8['dataName'] = matching_item7['dataName']
+            
+            # Agrega el elemento modificado a la lista de datos fusionados
             merged_data.append(item8)
 
-        # Verificar y almacenar en la base de datos
+        # Verifica y almacena en la base de datos MergedTelemetricOTT
         for merged_item in merged_data:
             record_id = merged_item.get('recordId')
-            if record_id and not MergedTelemetricActionId8.objects.filter(recordId=record_id).exists():
+            if record_id and not MergedTelemetricOTT.objects.filter(recordId=record_id).exists():
                 # Si el recordId no está en la base de datos, almacenarlo
-                MergedTelemetricActionId8.objects.create(**merged_item)
+                MergedTelemetricOTT.objects.create(**merged_item)
         
+        # Devuelve los datos fusionados
         return merged_data
 
-class ProcessMergedDataView(APIView):
+class ProcessMergedDataOTT(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
-            merged_data = MergedTelemetricData.FilterAndSumData()
+            merged_data = MergedDataOTT.FilterAndSumData()
 
+            # Devuelve una respuesta con los datos fusionados
             return Response({"message": merged_data }, status=status.HTTP_200_OK)
         except Exception as e:
+            # En caso de error, devuelve una respuesta de error con el mensaje
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class DataAccionId8(APIView):
+class DataAccionOTT(APIView):
     def get(self, request, *args, **kwargs):
-        data = MergedTelemetricActionId8.objects.all()
-        serializer = MergedTelemetricActionId8Serializer(data, many=True)  # Asegúrate de utilizar tu propio serializador
+        # Obtiene todos los objetos de la tabla MergedTelemetricOTT en la base de datos
+        data = MergedTelemetricOTT.objects.all()
+        
+        # Serializa los datos obtenidos utilizando tu propio serializador
+        serializer = MergedTelemetricOTTSerializer(data, many=True)
+        
+        # Devuelve una respuesta con los datos serializados
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+class MergedDataDVB(APIView):
+    @staticmethod
+    def FilterAndSumData():
+        # Filtra los datos de Telemetria con actionId 5 y 6
+        telemetria_data_actionid5 = Telemetria.objects.filter(actionId=5)
+        telemetria_data_actionid6 = Telemetria.objects.filter(actionId=6)
+        
+        # Serializa los datos obtenidos
+        serialized_data_actionid5 = TelemetriaSerializer(telemetria_data_actionid5, many=True).data
+        serialized_data_actionid6 = TelemetriaSerializer(telemetria_data_actionid6, many=True).data
+        
+        # Lista para almacenar los datos fusionados
+        merged_data = []
+
+        # Itera sobre los datos con actionId 6
+        for item6 in serialized_data_actionid6:
+            # Busca un elemento coincidente en los datos con actionId 5
+            matching_item5 = next((item5 for item5 in serialized_data_actionid5 if item5['dataId'] == item6['dataId']), None)
+            
+            # Si hay coincidencia, agrega la propiedad 'dataName' de actionId 5 a los datos de actionId 6
+            if matching_item5:
+                item6['dataName'] = matching_item5['dataName']
+            
+            # Agrega el elemento modificado a la lista de datos fusionados
+            merged_data.append(item6)
+
+        # Verifica y almacena en la base de datos MergedTelemetricDVB
+        for merged_item in merged_data:
+            record_id = merged_item.get('recordId')
+            if record_id and not MergedTelemetricDVB.objects.filter(recordId=record_id).exists():
+                # Si el recordId no está en la base de datos, almacenarlo
+                MergedTelemetricDVB.objects.create(**merged_item)
+        
+        # Devuelve los datos fusionados
+        return merged_data
+
+class ProcessMergedDataDVB(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
+            merged_data = MergedDataDVB.FilterAndSumData()
+
+            # Devuelve una respuesta con los datos fusionados
+            return Response({"message": merged_data }, status=status.HTTP_200_OK)
+        except Exception as e:
+            # En caso de error, devuelve una respuesta de error con el mensaje
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DataAccionId6(APIView):
+    def get(self, request, *args, **kwargs):
+        # Obtiene todos los objetos de la tabla MergedTelemetricDVB en la base de datos
+        data = MergedTelemetricDVB.objects.all()
+        
+        # Serializa los datos obtenidos utilizando tu propio serializador
+        serializer = MergedTelemetricDVBSerializer(data, many=True)
+        
+        # Devuelve una respuesta con los datos serializados
         return Response(serializer.data, status=status.HTTP_200_OK)

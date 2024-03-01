@@ -1,11 +1,11 @@
 import React, { useState, useEffect} from 'react';
 import axios from 'axios';
-import './DashOTT.scss';
+import './DashDVB.scss';
 import Chart from 'chart.js/auto';
 import 'chart.js/auto';
 import NavBar from '../../component/Navbar/Navbar';
 
-function DashOTT() {
+function DashDVB() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -52,7 +52,7 @@ function DashOTT() {
   const handleSearch = async () => {
     try {
       // Realizar la conexión con la API
-      axios.get(`http://localhost:8000/telemetria/mergedDVB/`)
+      axios.get(`http://localhost:8000/telemetria/mergedOTT/`)
       .then(response => {
         console.log('Datos recibidos:', response.data);
 
@@ -468,4 +468,4 @@ function DashOTT() {
   );
 };
 
-export default DashOTT;
+export default DashDVB;
