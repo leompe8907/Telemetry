@@ -158,19 +158,72 @@
                     }
                 }
             }
-            .TableOTT{
+            .TableTimeZonesOTT{
+                display: flex;
                 flex-direction: row;
-                justify-content: center;
-                .tableTypeOTT{
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-around;
+                width: 100%;
+                height: 600px;
+                .TableTimeZoneOTT{
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     flex-wrap: nowrap;
-                }
-                .graficaOTT{
                     width: 50%;
+                    height: 500px;
+                    overflow: hidden;
+                    .TableZoneOTT{
+                        width: 100%;
+                        display: flex;
+                        overflow-y: scroll;
+                    }
+                }
+                .containerGraphType{
+                    height: 500px;
                     text-align: center;
+                    justify-content: center;
+                    align-self: center;
+                    display: flex;
+                    .graficaOTT{
+                        width: 100%;
+                        text-align: center;
+                    }
+                }
+            }
+
+            .TableOTT{
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-around;
+                width: 100%;
+                height: 600px;
+                .containerTableOTT{
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    flex-wrap: nowrap;
+                    width: 50%;
+                    height: 500px;
+                    overflow: hidden;
+                    .TableTypeOTT{
+                        width: 100%;
+                        display: flex;
+                        overflow-y: scroll;
+                        justify-content: center;
+                    }
+                }
+                .containerGraphType{
+                    height: 500px;
+                    text-align: center;
+                    justify-content: center;
+                    align-self: center;
+                    display: flex;
                 }
             }
         }

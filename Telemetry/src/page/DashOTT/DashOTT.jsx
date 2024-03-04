@@ -1,9 +1,9 @@
 import React, { useState, useEffect} from 'react';
 import axios from 'axios';
-import './DashOTT.scss';
 import Chart from 'chart.js/auto';
 import 'chart.js/auto';
 import NavBar from '../../component/Navbar/Navbar';
+import './DashOTT.scss';
 
 function DashOTT() {
   const [startDate, setStartDate] = useState('');
@@ -229,7 +229,11 @@ function DashOTT() {
   };
 
   // Función de leyenda
-  const LeyendaAleatoria = () => {
+  const LeyendaAleatoria = async () => {
+
+    const duration = await sumDataDuration()
+    const tarjeta = await sumSmartcardId()
+
     const indiceAleatorio = Math.floor(Math.random() * Leyendas.length);
     setLeyendaActual(Leyendas[indiceAleatorio]);
   };
@@ -394,65 +398,67 @@ function DashOTT() {
                     </table>
                   </div>
                 </div>
-            
+
+
                 {/* Canales por franja horaria */}
-                <div className='containerGeneralTable TablaOTT'>
-                  <div className='containerTableType'>
+                <div className='containerGeneralTable TableTimeZonesOTT'>
+                  <div className='TableTimeZoneOTT'>
                     <h2 className='containerTittle'>Tabla de Resultados por Franja Horaria y DataName</h2>
-                    <table className='containerTable'>
-                      <thead className='containerTableThead'>
-                        <tr className='containerTableTr'>
-                          <th className='containerTableTh'>Franja Horaria</th>
-                          <th className='containerTableTh'>Nombre de Datos</th>
-                          <th className='containerTableTh'>Duración Total</th>
-                        </tr>
-                      </thead>
-                      <tbody className='containerTableTBody'>
-                        {Object.entries(sumChannelTimeSlot).map(([timeSlot, dataNames]) => (
-                          Object.entries(dataNames).map(([dataName, totalDuration]) => (
-                            <tr className='containerTableTr'  key={`${timeSlot}-${dataName}`}>
-                              <td className='containerTableTh'>{timeSlot}</td>
-                              <td className='containerTableTh'>{dataName}</td>
-                              <td className='containerTableTh'>{totalDuration}</td>
-                            </tr>
-                          ))
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className='containerGraphType'>
-                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
-                    <canvas id="sumByTimeSlot"></canvas>
-                  </div>
-                </div>
-                          
-                {/* Duracion de los OTT*/}
-                <div className='containerGeneralTable TableOTT'>
-                  <div className='containerTableType tableTypeOTT'>
-                    <div className='containerTableType tableTypeOTT tittle'>
-                      <h2 className='containerTittle'>Tabla de Resultados</h2>
-                    </div>
-                    <div className='containerTableType tableTypeOTT boddy'>
-                      <table className='containerTable tableOTT'>
-                        <thead className='containerTableThead TableTheadOTT'>
-                          <tr className='containerTableTr TableTrOTT'>
-                            <th>Nombre de Canales</th>
-                            <th>Duración Total</th>
+                    <div className='containerTableType TableZoneOTT'>
+                      <table className='containerTable'>
+                        <thead className='containerTableThead'>
+                          <tr className='containerTableTr'>
+                            <th className='containerTableTh'>Franja Horaria</th>
+                            <th className='containerTableTh'>Nombre de Datos</th>
+                            <th className='containerTableTh'>Duración Total</th>
                           </tr>
                         </thead>
-                        <tbody className='containerTableTBody TableTBodyOTT'>
-                          {Object.entries(dataName).map(([name, totalDuration]) => (
-                            <tr className='containerTableTr TableTrOTT' key={name}>
-                              <td className='containerTableTh'>{name}</td>
-                              <td className='containerTableTh'>{totalDuration}</td>
-                            </tr>
-                          ))}
+                        <tbody className='containerTableTBody'>
+                          {Object.entries(sumChannelTimeSlot).map(([timeSlot, dataNames]) => (
+                            Object.entries(dataNames).map(([dataName, totalDuration]) => (
+                              <tr className='containerTableTr'  key={`${timeSlot}-${dataName}`}>
+                                <td className='containerTableTh'>{timeSlot}</td>
+                                <td className='containerTableTh'>{dataName}</td>
+                                <td className='containerTableTh'>{totalDuration}</td>
+                              </tr>
+                            ))
+                            ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
+                  <div className='containerGraphType'>
+                    <canvas id="sumByTimeSlot"></canvas>
+                  </div>
+                </div>
+
+
+                {/* Duracion de los OTT*/}
+                <div className='containerGeneralTable TableOTT'>
+                  <div className='containerTableOTT'>
+                    <h2 className='containerTittle'>Tabla de Resultados</h2>
+                    <div className='containerTableType TableTypeOTT'>
+                      <div className='containerTableType'>
+                        <table className='containerTable'>
+                          <thead className='containerTableThead'>
+                            <tr className='containerTableTr'>
+                              <th>Nombre de Canales</th>
+                              <th>Duración Total</th>
+                            </tr>
+                          </thead>
+                          <tbody className='containerTableTBody'>
+                            {Object.entries(dataName).map(([name, totalDuration]) => (
+                              <tr className='containerTableTr TableTrOTT' key={name}>
+                                <td className='containerTableTh'>{name}</td>
+                                <td className='containerTableTh'>{totalDuration}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                   <div className='containerGraphType graficaOTT'>
-                    <h2 className='containerTittle'>Gráfico de Resultados duracion de OTT</h2>
                     <canvas id="dataName"></canvas>
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect} from 'react';
 import axios from 'axios';
-import './DashDVB.scss';
 import Chart from 'chart.js/auto';
 import 'chart.js/auto';
 import NavBar from '../../component/Navbar/Navbar';
