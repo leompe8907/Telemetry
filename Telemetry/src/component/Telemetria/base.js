@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { CV } from "../../cv/cv";
 
 const Telemetria = () => {
-
   const [telemetriaData, setTelemetriaData] = useState([]);
+  const [sentRecordIds, setSentRecordIds] = useState(new Set());
+  const [stopFetching, setStopFetching] = useState(true);
+
   const limit = 1000;
 
   const fetchTelemetriaData = async (pageNumber) => {
@@ -15,18 +17,36 @@ const Telemetria = () => {
             sessionId: localStorage.getItem("sessionID"),
             offset: pageNumber,
             limit: limit,
+            orderBy: "recordId",
+            orderDir: "DESC"
           },
           (result) => resolve(result)
         );
       });
 
       if (result.success) {
-        const newData = result.answer;
-        setTelemetriaData((prevData) => [...prevData, ...newData.telemetryRecordEntries]);
+        const newTelemetryRecords = result.answer.telemetryRecordEntries.filter(
+          (record) => !sentRecordIds.has(record.recordId)
+        );
 
-        await sendDataToDjango(newData.telemetryRecordEntries);
+        const modifiedTelemetryRecords = newTelemetryRecords.map((record) => ({
+          ...record,
+          dataDate: obtenerFechaFormateada(record.timestamp),
+          timeDate: obtenerHoraFormateada(record.timestamp),
+        }));
 
-        console.log('Telemetria Data:', newData.telemetryRecordEntries);
+        setSentRecordIds((prevIds) => new Set([...prevIds, ...modifiedTelemetryRecords.map((record) => record.recordId)]));
+        setTelemetriaData((prevData) => [...prevData, ...modifiedTelemetryRecords]);
+
+        if (!result.answer.hasDuplicate) {
+          await sendDataToDjango(modifiedTelemetryRecords);
+          // Continúa la lógica aquí si es necesario
+        } else {
+          console.log('Deteniendo la consulta debido a registros duplicados');
+          setStopFetching(true);
+          throw new Error('Registros duplicados encontrados. Deteniendo la consulta.');
+        }
+
         return result;
       } else {
         console.error('Failed to fetch result:', result.errorMessage);
@@ -40,103 +60,50 @@ const Telemetria = () => {
 
   const sendDataToDjango = async (telemetryData) => {
     try {
-      for (const telemetryRecord of telemetryData) {
-        const {
-          recordId,
-          subscriberCode,
-          deviceId,
-          smartcardId,
-          anonymized,
-          actionId,
-          actionKey,
-          date,
-          timestamp,
-          manual,
-          reaonId,
-          reasonKey,
-          dataNetId,
-          dataTsId,
-          dataSeviceId,
-          dataId,
-          dataName,
-          dataPrice,
-          dataDuration,
-          whoisCountry,
-          whoisIsp,
-          ipId,
-          ip,
-          profileId
-        } = telemetryRecord;
+      const result = await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(telemetryData),
+      });
 
-        const timestampDate = new Date(timestamp);
-        const timestampMilliseconds = timestampDate.getTime();
-
-        console.log("Record ID:", recordId);
-        console.log("Subscriber Code:", subscriberCode);
-        console.log("Timestamp en milisegundos:", timestampMilliseconds);
-
-        let result;
-        try {
-          result = await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              recordId,
-              subscriberCode,
-              deviceId,
-              smartcardId,
-              anonymized,
-              actionId,
-              actionKey,
-              date,
-              timestamp: timestampMilliseconds,
-              manual,
-              reaonId,
-              reasonKey,
-              dataNetId,
-              dataTsId,
-              dataSeviceId,
-              dataId,
-              dataName,
-              dataPrice,
-              dataDuration,
-              whoisCountry,
-              whoisIsp,
-              ipId,
-              ip,
-              profileId
-            }),
-          });
-        } catch (error) {
-          console.error('Error en la solicitud HTTP:', error);
-          throw error;
+      let responseData;
+      try {
+        responseData = await result.json();
+        if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
+          console.log('Deteniendo la consulta debido a registros duplicados');
+          setStopFetching(true);
+          return;
         }
-
-        let responseData;
-        try {
-          responseData = await result.json();
-        } catch (error) {
-          console.error('Error al analizar la respuesta JSON:', error);
-          throw error;
-        }
-
-        console.log('Resultado de data_telemetria:', responseData);
+      } catch (error) {
+        console.error('Error al analizar la respuesta JSON:', error);
+        throw error;
       }
 
-      return { success: true };
+      console.log('Resultado de data_telemetria:', responseData);
     } catch (error) {
       console.error('Error al enviar datos a Django:', error);
       return { success: false, errorMessage: error.message };
     }
   };
 
+  const obtenerFechaFormateada = (timestamp) => {
+    const fecha = new Date(timestamp);
+    return fecha.toISOString().split('T')[0];
+  };
+
+  const obtenerHoraFormateada = (timestamp) => {
+    const data = new Date(timestamp);
+    const hora = data.getHours();
+    return hora;
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       let pageNumber = 0;
       try {
-        while (true) {
+        while (stopFetching) {
           const result = await fetchTelemetriaData(pageNumber);
           if (!result.success || result.answer.telemetryRecordEntries.length === 0) break;
           pageNumber += limit;
@@ -147,8 +114,7 @@ const Telemetria = () => {
     };
 
     fetchAllData();
-  }, []);
-
+  }, [stopFetching]);
 };
 
 export default Telemetria;

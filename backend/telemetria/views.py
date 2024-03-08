@@ -4,12 +4,12 @@ from django.views.decorators.http import require_POST  # Requiere que la solicit
 from django.http import JsonResponse  # Devuelve respuestas HTTP en formato JSON
 from rest_framework.views import APIView  # Clase base para vistas basadas en clases en Django REST framework
 from rest_framework import viewsets  # Clase para definir vistas de conjunto en Django REST framework
-from .serializer import TelemetriaSerializer, MergedTelemetricOTTSerializer, MergedTelemetricDVBSerializer  # Importa los serializadores necesarios
+from .serializer import TelemetriaSerializer, MergedTelemetricOTTSerializer, MergedTelemetricDVBSerializer, MergedTelemetricCatchupSerializer # Importa los serializadores necesarios
 from .models import Telemetria, MergedTelemetricOTT, MergedTelemetricDVB  # Importa los modelos necesarios
 import json  # Módulo para trabajar con datos JSON
 from rest_framework import status
 from rest_framework.response import Response  # Clase para manejar respuestas HTTP
-
+from django.db import IntegrityError
 
 # Define una vista de conjunto usando Django REST framework
 class TelemetriaViewSet(viewsets.ModelViewSet):
@@ -26,17 +26,15 @@ def DataTelemetria(request):
 
         # Lista para almacenar respuestas individuales para cada registro en el lote
         responses = []
+        telemetria_instances = []
 
+        # Crear instancias de Telemetria
         for data in data_batch:
-            # Verificar si el registro ya existe en la base de datos
             existing_record = Telemetria.objects.filter(recordId=data.get('recordId')).first()
-
             if existing_record:
-                # Si el registro ya existe, agrega una respuesta indicando que es un duplicado
                 responses.append({'status': 'success', 'message': 'Duplicate record'})
             else:
-                # Crea una instancia de Telemetria con los datos proporcionados
-                telemetria = Telemetria(
+                telemetria_instances.append(Telemetria(
                     actionId=data.get('actionId'),
                     actionKey=data.get('actionKey'),
                     anonymized=data.get('anonymized'),
@@ -63,18 +61,20 @@ def DataTelemetria(request):
                     timeDate=data.get('timeDate'),
                     whoisCountry=data.get('whoisCountry'),
                     whoisIsp=data.get('whoisIsp')
-                )
-                # Guarda la instancia de Telemetria en la base de datos
-                telemetria.save()
+                ))
 
-                # Agrega una respuesta de éxito para este registro
-                responses.append({'status': 'success'})
+        # Guardar instancias de Telemetria en la base de datos
+        Telemetria.objects.bulk_create(telemetria_instances)
 
-        # Devuelve las respuestas para cada registro en el lote
+        # Crear respuestas exitosas
+        responses.extend([{'status': 'success'} for _ in telemetria_instances])
+
+        # Devolver las respuestas para cada registro en el lote
         return JsonResponse(responses, safe=False)
     except Exception as e:
         # En caso de error, devuelve una respuesta de error con un mensaje
         return JsonResponse({'status': 'error', 'message': str(e)})
+
 
 class MergedDataOTT(APIView):
     @staticmethod
@@ -193,3 +193,44 @@ class DataAccionId6(APIView):
         
         # Devuelve una respuesta con los datos serializados
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class  MergeDataCatchup(APIView):
+    @staticmethod
+    def FilterAndSumData():
+        # Filtra los datos de Telemetria con actionId 5 y 6
+        telemetria_data_actionid16 = Telemetria.objects.filter(actionId=16)
+        telemetria_data_actionid17 = Telemetria.objects.filter(actionId=17)
+        telemetria_data_actionid18 = Telemetria.objects.filter(actionId=18)
+
+        # Serializa los datos obtenidos
+        serialized_data_actionid16 = TelemetriaSerializer(telemetria_data_actionid16, many=True).data
+        serialized_data_actionid17 = TelemetriaSerializer(telemetria_data_actionid17, many=True).data
+        serialized_data_actionid18 = TelemetriaSerializer(telemetria_data_actionid18, many=True).data
+
+        # Lista para almacenar los datos fusionados
+        merge_data17 = []
+        # Itera sobre los datos con actionId 6
+        for item17 in serialized_data_actionid17:
+            # Busca un elemento coincidente en los datos con actionId16
+            matching_item16 = next((item16 for item16 in serialized_data_actionid16 if item16['dataId'] == item17['dataId']), None)
+            
+            # Si hay coincidencia, agrega la propiedad 'dataName' de actionId 16 a los datos de actionId 17
+            if matching_item16:
+                item17['dataName'] = matching_item16['dataName']
+            
+            # Agrega el elemento modificado a la lista de datos fusionados
+            merge_data17.append(item17)
+
+        merge_data18 = []
+        for item18 in serialized_data_actionid18:
+            # Busca un elemento coincidente en los datos con actionId16
+            matching_item16 = next((item16 for item16 in serialized_data_actionid16 if item16['dataId'] == item18['dataId']), None)
+            
+            # Si hay coincidencia, agrega la propiedad 'dataName' de actionId 16 a los datos de actionId 18
+            if matching_item16:
+                item18['dataName'] = matching_item16['dataName']
+            
+            # Agrega el elemento modificado a la lista de datos fusionados
+            merge_data18.append(item18)
+
+        return merge_data18, merge_data17
