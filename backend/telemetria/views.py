@@ -9,7 +9,8 @@ from .models import Telemetria, MergedTelemetricOTT, MergedTelemetricDVB  # Impo
 import json  # Módulo para trabajar con datos JSON
 from rest_framework import status
 from rest_framework.response import Response  # Clase para manejar respuestas HTTP
-from django.db import IntegrityError
+from django.utils.decorators import method_decorator
+from django.views import View
 
 # Define una vista de conjunto usando Django REST framework
 class TelemetriaViewSet(viewsets.ModelViewSet):
@@ -75,6 +76,19 @@ def DataTelemetria(request):
         # En caso de error, devuelve una respuesta de error con un mensaje
         return JsonResponse({'status': 'error', 'message': str(e)})
 
+@method_decorator(csrf_exempt, name='dispatch')
+class TelemetriaCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            for entry in data:
+                Telemetria.objects.create(**entry)
+            
+            response_data = {'success': True, 'message': 'Datos guardados exitosamente.'}
+        except Exception as e:
+            response_data = {'success': False, 'message': str(e)}
+
+        return JsonResponse(response_data)
 
 class MergedDataOTT(APIView):
     @staticmethod
@@ -102,13 +116,6 @@ class MergedDataOTT(APIView):
             # Agrega el elemento modificado a la lista de datos fusionados
             merged_data.append(item8)
 
-        # Verifica y almacena en la base de datos MergedTelemetricOTT
-        for merged_item in merged_data:
-            record_id = merged_item.get('recordId')
-            if record_id and not MergedTelemetricOTT.objects.filter(recordId=record_id).exists():
-                # Si el recordId no está en la base de datos, almacenarlo
-                MergedTelemetricOTT.objects.create(**merged_item)
-        
         # Devuelve los datos fusionados
         return merged_data
 
@@ -117,6 +124,13 @@ class ProcessMergedDataOTT(APIView):
         try:
             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
             merged_data = MergedDataOTT.FilterAndSumData()
+            
+            # Verifica y almacena en la base de datos MergedTelemetricOTT
+            for merged_item in merged_data:
+                record_id = merged_item.get('recordId')
+                if record_id and not MergedTelemetricOTT.objects.filter(recordId=record_id).exists():
+                    # Si el recordId no está en la base de datos, almacenarlo
+                    MergedTelemetricOTT.objects.create(**merged_item)
 
             # Devuelve una respuesta con los datos fusionados
             return Response({"message": merged_data }, status=status.HTTP_200_OK)
@@ -160,13 +174,6 @@ class MergedDataDVB(APIView):
             
             # Agrega el elemento modificado a la lista de datos fusionados
             merged_data.append(item6)
-
-        # Verifica y almacena en la base de datos MergedTelemetricDVB
-        for merged_item in merged_data:
-            record_id = merged_item.get('recordId')
-            if record_id and not MergedTelemetricDVB.objects.filter(recordId=record_id).exists():
-                # Si el recordId no está en la base de datos, almacenarlo
-                MergedTelemetricDVB.objects.create(**merged_item)
         
         # Devuelve los datos fusionados
         return merged_data
@@ -176,6 +183,12 @@ class ProcessMergedDataDVB(APIView):
         try:
             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
             merged_data = MergedDataDVB.FilterAndSumData()
+            # Verifica y almacena en la base de datos MergedTelemetricDVB
+            for merged_item in merged_data:
+                record_id = merged_item.get('recordId')
+                if record_id and not MergedTelemetricDVB.objects.filter(recordId=record_id).exists():
+                    # Si el recordId no está en la base de datos, almacenarlo
+                    MergedTelemetricDVB.objects.create(**merged_item)
 
             # Devuelve una respuesta con los datos fusionados
             return Response({"message": merged_data }, status=status.HTTP_200_OK)
@@ -183,7 +196,7 @@ class ProcessMergedDataDVB(APIView):
             # En caso de error, devuelve una respuesta de error con el mensaje
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class DataAccionId6(APIView):
+class DataAccionDVB(APIView):
     def get(self, request, *args, **kwargs):
         # Obtiene todos los objetos de la tabla MergedTelemetricDVB en la base de datos
         data = MergedTelemetricDVB.objects.all()
