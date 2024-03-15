@@ -76,7 +76,22 @@ def DataTelemetria(request):
         # En caso de error, devuelve una respuesta de error con un mensaje
         return JsonResponse({'status': 'error', 'message': str(e)})
 
-@method_decorator(csrf_exempt, name='dispatch')
+class MergeData(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            data_batch = json.loads(request.body.decode('utf-8'))
+            for merged in data_batch:
+                record_id = merged.get('recordId')
+                if record_id and not Telemetria.objects.filter(recordId=record_id).exists():
+                    Telemetria.objects.create(**merged)
+            return Response({"message": "Data processed successfully."}, status=status.HTTP_200_OK)
+        except json.JSONDecodeError as e:
+            return Response({"error": "Invalid JSON format in request body."}, status=status.HTTP_400_BAD_REQUEST)
+        except KeyError as e:
+            return Response({"error": f"Missing key in data: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class TelemetriaCreateView(APIView):
     def post(self, request, *args, **kwargs):
         try:

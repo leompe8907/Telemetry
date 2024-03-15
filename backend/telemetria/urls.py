@@ -8,7 +8,6 @@ router.register(r'telemetria', TelemetriaViewSet, basename='telemetria')
 
 # Definir las URL para las vistas de Django
 urlpatterns = [
-    path('data/', TelemetriaCreateView.as_view(), name='telemetria-data'),
     path("dataTelemetria/", DataTelemetria, name='data_telemetria'),  # Vista para manejar datos de telemetría
     path('mergeddataOTT/', ProcessMergedDataOTT.as_view(), name='postott'), # envio de datos de ott a la base de datos de OTT
     path('mergedOTT/', DataAccionOTT.as_view(), name='getott'), # obtencion de datos desde la base de datos de OTT
