@@ -3,12 +3,11 @@ import { CV } from "../../cv/cv";
 
 const Telemetria = () => {
   const [telemetriaData, setTelemetriaData] = useState([]);
-  const [sentRecordIds, setSentRecordIds] = useState(new Set());
-  const [stopFetching, setStopFetching] = useState(true);
+  const [stopFetching, setStopFetching] = useState(false);
 
   const limit = 1000;
 
-  const fetchTelemetriaData = async (pageNumber) => {
+  const fetchData = async (pageNumber) => {
     try {
       const result = await new Promise((resolve) => {
         CV.call(
@@ -25,36 +24,14 @@ const Telemetria = () => {
       });
 
       if (result.success) {
-        const newTelemetryRecords = result.answer.telemetryRecordEntries.filter(
-          (record) => !sentRecordIds.has(record.recordId)
-        );
-
-        const modifiedTelemetryRecords = newTelemetryRecords.map((record) => ({
-          ...record,
-          dataDate: obtenerFechaFormateada(record.timestamp),
-          timeDate: obtenerHoraFormateada(record.timestamp),
-        }));
-
-        setSentRecordIds((prevIds) => new Set([...prevIds, ...modifiedTelemetryRecords.map((record) => record.recordId)]));
-        setTelemetriaData((prevData) => [...prevData, ...modifiedTelemetryRecords]);
-
-        if (!result.answer.hasDuplicate) {
-          await sendDataToDjango(modifiedTelemetryRecords);
-          // Continúa la lógica aquí si es necesario
-        } else {
-          console.log('Deteniendo la consulta debido a registros duplicados');
-          setStopFetching(true);
-          throw new Error('Registros duplicados encontrados. Deteniendo la consulta.');
-        }
-
-        return result;
+        return result.answer.telemetryRecordEntries;
       } else {
         console.error('Failed to fetch result:', result.errorMessage);
-        return result;
+        return [];
       }
     } catch (error) {
       console.error('Error fetching telemetry data:', error);
-      return { success: false, errorMessage: error.message };
+      return [];
     }
   };
 
@@ -68,53 +45,58 @@ const Telemetria = () => {
         body: JSON.stringify(telemetryData),
       });
 
-      let responseData;
-      try {
-        responseData = await result.json();
-        if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
-          console.log('Deteniendo la consulta debido a registros duplicados');
-          setStopFetching(true);
-          return;
-        }
-      } catch (error) {
-        console.error('Error al analizar la respuesta JSON:', error);
-        throw error;
-      }
-
+      const responseData = await result.json();
       console.log('Resultado de data_telemetria:', responseData);
+
+      if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
+        console.log('Deteniendo la consulta debido a registros duplicados');
+        setStopFetching(true); // Detener la descarga de datos
+      }
     } catch (error) {
       console.error('Error al enviar datos a Django:', error);
-      return { success: false, errorMessage: error.message };
     }
   };
 
-  const obtenerFechaFormateada = (timestamp) => {
-    const fecha = new Date(timestamp);
-    return fecha.toISOString().split('T')[0];
-  };
+  useEffect(() => {
+    const fetchDataRecursive = async (pageNumber) => {
+      let currentPage = pageNumber;
+      while (!stopFetching) {
+        try {
+          const data = await fetchData(currentPage);
+          if (data.length > 0) {
+            const modifiedData = data.map(record => ({
+              ...record,
+              dataDate: getDataDate(record.timestamp),
+              timeDate: getTimeDate(record.timestamp)
+            }));
+            setTelemetriaData(prevData => [...prevData, ...modifiedData]);
+            await sendDataToDjango(modifiedData);
+            currentPage += limit;
+          } else {
+            break;
+          }
+        } catch (error) {
+          console.error('Error fetching telemetry data:', error);
+          break;
+        }
+      }
+    };
 
-  const obtenerHoraFormateada = (timestamp) => {
+    fetchDataRecursive(0);
+  }, [stopFetching]);
+
+  const getTimeDate = (timestamp) => {
     const data = new Date(timestamp);
     const hora = data.getHours();
     return hora;
   };
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      let pageNumber = 0;
-      try {
-        while (stopFetching) {
-          const result = await fetchTelemetriaData(pageNumber);
-          if (!result.success || result.answer.telemetryRecordEntries.length === 0) break;
-          pageNumber += limit;
-        }
-      } catch (error) {
-        console.error('Error fetching telemetry data:', error);
-      }
-    };
+  const getDataDate = (timestamp) => {
+    const fecha = new Date(timestamp);
+    return fecha.toISOString().split('T')[0];
+  };
 
-    fetchAllData();
-  }, [stopFetching]);
+  return null; // Opcional: reemplazar con el contenido JSX necesario
 };
 
 export default Telemetria;
