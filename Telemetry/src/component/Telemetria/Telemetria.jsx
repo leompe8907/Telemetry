@@ -3,7 +3,7 @@ import { CV } from "../../cv/cv";
 
 const Telemetria = () => {
   const [telemetriaData, setTelemetriaData] = useState([]);
-  const [stopFetching, setStopFetching] = useState(false);
+  const [stopFetching, setStopFetching] = useState(true);
 
   const limit = 1000;
 
@@ -50,7 +50,7 @@ const Telemetria = () => {
 
       if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
         console.log('Deteniendo la consulta debido a registros duplicados');
-        setStopFetching(true); // Detener la descarga de datos
+        setStopFetching(false); // Detener la descarga de datos
       }
     } catch (error) {
       console.error('Error al enviar datos a Django:', error);
@@ -60,7 +60,7 @@ const Telemetria = () => {
   useEffect(() => {
     const fetchDataRecursive = async (pageNumber) => {
       let currentPage = pageNumber;
-      while (!stopFetching) {
+      while (stopFetching) {
         try {
           const data = await fetchData(currentPage);
           if (data.length > 0) {

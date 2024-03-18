@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .views import TelemetriaViewSet, DataTelemetria, DataAccionOTT, ProcessMergedDataOTT, ProcessMergedDataDVB, DataAccionId6
+from .views import TelemetriaViewSet, DataTelemetria, DataAccionOTT, ProcessMergedDataOTT, ProcessMergedDataDVB, DataAccionDVB
 
 # Configura el enrutador para la vista de conjunto TelemetriaViewSet
 router = DefaultRouter()

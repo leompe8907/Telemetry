@@ -4,7 +4,7 @@ class Telemetria(models.Model):
     actionId = models.IntegerField(null=True, blank=True)
     actionKey = models.CharField(max_length=20, null=True, blank=True)
     anonymized = models.BooleanField(null=True, blank=True)
-    data = models.CharField(max_length=200,null=True ,blank=True)
+    data = models.CharField(max_length=200, null=True ,blank=True)
     dataDuration = models.IntegerField(null=True, blank=True)
     dataId = models.IntegerField(null=True, blank=True)
     dataName = models.CharField(max_length=200, blank=True, null=True)

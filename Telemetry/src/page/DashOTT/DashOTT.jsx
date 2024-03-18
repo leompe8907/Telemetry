@@ -231,9 +231,6 @@ function DashOTT() {
   // Función de leyenda
   const LeyendaAleatoria = async () => {
 
-    const duration = await sumDataDuration()
-    const tarjeta = await sumSmartcardId()
-
     const indiceAleatorio = Math.floor(Math.random() * Leyendas.length);
     setLeyendaActual(Leyendas[indiceAleatorio]);
   };
