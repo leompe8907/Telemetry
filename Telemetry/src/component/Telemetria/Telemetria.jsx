@@ -4,6 +4,7 @@ import { CV } from "../../cv/cv";
 const Telemetria = () => {
   const [telemetriaData, setTelemetriaData] = useState([]);
   const [stopFetching, setStopFetching] = useState(true);
+  const [djangoResponse, setDjangoResponse] = useState(null); // Nuevo estado para almacenar la respuesta de Django
 
   const limit = 1000;
 
@@ -48,10 +49,8 @@ const Telemetria = () => {
       const responseData = await result.json();
       console.log('Resultado de data_telemetria:', responseData);
 
-      if (responseData.status === 'success' && responseData.message === 'Duplicate record') {
-        console.log('Deteniendo la consulta debido a registros duplicados');
-        setStopFetching(false); // Detener la descarga de datos
-      }
+      // Almacena la respuesta de Django en el estado
+      setDjangoResponse(responseData);
     } catch (error) {
       console.error('Error al enviar datos a Django:', error);
     }
@@ -96,6 +95,26 @@ const Telemetria = () => {
     return fecha.toISOString().split('T')[0];
   };
 
+  useEffect(() => {
+    let shouldStopFetching = false; // Bandera para detener la descarga de datos
+  
+    // Iterar sobre los elementos de djangoResponse y mostrar "banana" si el mensaje es "Duplicate record"
+    if (djangoResponse) {
+      djangoResponse.forEach(response => {
+        if (response.message === 'Duplicate record') {
+          console.log('banana');
+          shouldStopFetching = true; // Establecer la bandera en verdadero
+        }
+      });
+    }
+  
+    // Actualizar el estado fuera del bucle
+    if (shouldStopFetching) {
+      setStopFetching(false); // Detener la descarga de datos
+    }
+    console.log(stopFetching)
+  }, [djangoResponse]);
+  
   return null; // Opcional: reemplazar con el contenido JSX necesario
 };
 

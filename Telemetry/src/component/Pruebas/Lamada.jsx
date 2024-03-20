@@ -7,9 +7,11 @@ function Lamada() {
     const OTT = axios.post(`http://localhost:8000/telemetria/mergeddataOTT/`);
     console.log(OTT)
 
+    const OT = axios.get(`http://localhost:8000/telemetria/mergedOTT`)
+    console.log(OT)
+
     const DVB = axios.post(`http://localhost:8000/telemetria/mergeddataDVB/`);
     console.log(DVB)
-
 
   }, []);
 
