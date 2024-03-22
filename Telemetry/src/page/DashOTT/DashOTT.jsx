@@ -27,32 +27,10 @@ function DashOTT() {
   const [smartcardChartData, setSmartcardChartData] = useState(null);
 
 
-  const Leyendas = [
-    "Durante el período comprendido entre " + startDate + " y " + endDate +  " hemos examinado minuciosamente los registros, los cuales revelan que se han acumulado un total de " + generalDuration + " segundos de actividad en " + device + " dispositivos. Esta información proporciona una visión detallada del tiempo de uso y la distribución de la actividad en los diferentes dispositivos.",
-    
-    "Los datos recopilados desde " +startDate+ " hasta " +endDate+ " han sido sometidos a un análisis exhaustivo, destacando un patrón significativo de "+generalDuration+ " segundos de actividad en " +device+ " dispositivos. Este análisis proporciona una comprensión profunda de la dinámica de uso a lo largo del período de estudio.",
-    
-    "En el análisis de los registros correspondientes al periodo de " +startDate+" a "+endDate+", se ha constatado un total de "+generalDuration+" segundos de utilización en "+device+" dispositivos. Este análisis detallado nos permite identificar tendencias, picos y valles en la actividad, arrojando luz sobre el comportamiento de los usuarios en diferentes momentos.",
-    
-    "Los registros recolectados desde "+startDate+" hasta "+endDate+" ofrecen un panorama completo de la actividad, mostrando que se han registrado "+generalDuration+" segundos de uso en "+device+" dispositivos. Este análisis no solo destaca la duración total, sino que también proporciona información valiosa sobre la frecuencia y la distribución de la actividad a lo largo del tiempo.",
-    
-    "La revisión de los datos recopilados durante el periodo de "+startDate+" a "+endDate+" revela una duración acumulada de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis detallado es esencial para comprender la variabilidad en el tiempo de uso y la intensidad de la actividad en diferentes momentos del día.",
-    
-    "Al examinar los registros desde "+startDate+" hasta "+endDate+", se ha identificado un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis proporciona una visión completa de la duración y la distribución de la actividad, permitiendo una comprensión más profunda de los patrones de uso.",
-    
-    "El análisis de los registros recopilados desde "+startDate+" hasta "+endDate+" pone de manifiesto que se ha observado una duración total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este examen detallado proporciona insights cruciales sobre la variabilidad temporal en el uso de los dispositivos.",
-    
-    "Hemos evaluado minuciosamente la información obtenida desde "+startDate+" hasta "+endDate+", y los resultados indican que se ha registrado un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis profundo es esencial para comprender la dinámica y los patrones de uso en diferentes momentos del periodo estudiado.",
-    
-    "Durante el periodo de "+startDate+" a "+endDate+", hemos examinado con detalle los registros, evidenciando "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis proporciona una visión integral de la distribución del tiempo de uso, permitiendo identificar momentos de mayor y menor actividad.",
-    
-    "Los registros recopilados desde "+startDate+" hasta "+endDate+" han sido meticulosamente analizados, revelando un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis exhaustivo es fundamental para comprender la variabilidad temporal y los patrones de uso en la población de dispositivos estudiada."
-  ]
-
   const handleSearch = async () => {
     try {
       // Realizar la conexión con la API
-      axios.get(`http://localhost:8000/telemetria/mergedOTT/`)
+      axios.get(`http://localhost:8000/telemetria/mergeddataott/`)
       .then(response => {
         console.log('Datos recibidos:', response.data);
 
@@ -230,6 +208,28 @@ function DashOTT() {
 
   // Función de leyenda
   const LeyendaAleatoria = async () => {
+
+    const Leyendas = [
+      "Durante el período comprendido entre " + startDate + " y " + endDate +  " hemos examinado minuciosamente los registros, los cuales revelan que se han acumulado un total de " + generalDuration + " segundos de actividad en " + device + " dispositivos. Esta información proporciona una visión detallada del tiempo de uso y la distribución de la actividad en los diferentes dispositivos.",
+      
+      "Los datos recopilados desde " +startDate+ " hasta " +endDate+ " han sido sometidos a un análisis exhaustivo, destacando un patrón significativo de "+generalDuration+ " segundos de actividad en " +device+ " dispositivos. Este análisis proporciona una comprensión profunda de la dinámica de uso a lo largo del período de estudio.",
+      
+      "En el análisis de los registros correspondientes al periodo de " +startDate+" a "+endDate+", se ha constatado un total de "+generalDuration+" segundos de utilización en "+device+" dispositivos. Este análisis detallado nos permite identificar tendencias, picos y valles en la actividad, arrojando luz sobre el comportamiento de los usuarios en diferentes momentos.",
+      
+      "Los registros recolectados desde "+startDate+" hasta "+endDate+" ofrecen un panorama completo de la actividad, mostrando que se han registrado "+generalDuration+" segundos de uso en "+device+" dispositivos. Este análisis no solo destaca la duración total, sino que también proporciona información valiosa sobre la frecuencia y la distribución de la actividad a lo largo del tiempo.",
+      
+      "La revisión de los datos recopilados durante el periodo de "+startDate+" a "+endDate+" revela una duración acumulada de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis detallado es esencial para comprender la variabilidad en el tiempo de uso y la intensidad de la actividad en diferentes momentos del día.",
+      
+      "Al examinar los registros desde "+startDate+" hasta "+endDate+", se ha identificado un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis proporciona una visión completa de la duración y la distribución de la actividad, permitiendo una comprensión más profunda de los patrones de uso.",
+      
+      "El análisis de los registros recopilados desde "+startDate+" hasta "+endDate+" pone de manifiesto que se ha observado una duración total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este examen detallado proporciona insights cruciales sobre la variabilidad temporal en el uso de los dispositivos.",
+      
+      "Hemos evaluado minuciosamente la información obtenida desde "+startDate+" hasta "+endDate+", y los resultados indican que se ha registrado un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis profundo es esencial para comprender la dinámica y los patrones de uso en diferentes momentos del periodo estudiado.",
+      
+      "Durante el periodo de "+startDate+" a "+endDate+", hemos examinado con detalle los registros, evidenciando "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis proporciona una visión integral de la distribución del tiempo de uso, permitiendo identificar momentos de mayor y menor actividad.",
+      
+      "Los registros recopilados desde "+startDate+" hasta "+endDate+" han sido meticulosamente analizados, revelando un total de "+generalDuration+" segundos de actividad en "+device+" dispositivos. Este análisis exhaustivo es fundamental para comprender la variabilidad temporal y los patrones de uso en la población de dispositivos estudiada."
+    ]
 
     const indiceAleatorio = Math.floor(Math.random() * Leyendas.length);
     setLeyendaActual(Leyendas[indiceAleatorio]);

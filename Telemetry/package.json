@@ -12,6 +12,7 @@
     "idb": "^8.0.0",
     "indexeddb": "^0.0.0",
     "md5": "^2.3.0",
+    "pako": "^2.1.0",
     "react": "^18.2.0",
     "react-datepicker": "^4.25.0",
     "react-dom": "^18.2.0",
@@ -19,8 +20,10 @@
     "react-router-dom": "^6.21.0",
     "react-scripts": "5.0.1",
     "react-spring": "^9.7.3",
+    "react-zlib-js": "^1.0.5",
     "sass": "^1.69.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zlib": "1.0.5"
   },
   "scripts": {
     "start": "react-scripts start",

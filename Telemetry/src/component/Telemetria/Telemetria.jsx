@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { CV } from "../../cv/cv";
+import pako from 'pako';
+
 
 const Telemetria = () => {
   const [telemetriaData, setTelemetriaData] = useState([]);
-  const [stopFetching, setStopFetching] = useState(true);
-  const [djangoResponse, setDjangoResponse] = useState(null); // Nuevo estado para almacenar la respuesta de Django
 
   const limit = 1000;
 
@@ -17,49 +17,53 @@ const Telemetria = () => {
             sessionId: localStorage.getItem("sessionID"),
             offset: pageNumber,
             limit: limit,
-            orderBy: "recordId",
+            orderBy: "timestamp",
             orderDir: "DESC"
           },
           (result) => resolve(result)
         );
       });
-
-      if (result.success) {
-        return result.answer.telemetryRecordEntries;
-      } else {
-        console.error('Failed to fetch result:', result.errorMessage);
-        return [];
+      if (!result.success) {
+        throw new Error(`Error al obtener datos: ${result.errorMessage}`);
       }
+
+      return result.answer.telemetryRecordEntries;
     } catch (error) {
-      console.error('Error fetching telemetry data:', error);
+      console.error(`Error al obtener datos de telemetría: ${error.message}`);
       return [];
     }
   };
 
   const sendDataToDjango = async (telemetryData) => {
     try {
-      const result = await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
+      // Comprimir los datos antes de enviarlos
+      const compressedData = compressData(telemetryData);
+      
+      await fetch('http://localhost:8000/telemetria/dataTelemetria/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Content-Encoding': 'gzip' // Indica que los datos están comprimidos
         },
-        body: JSON.stringify(telemetryData),
+        body: compressedData,
       });
-
-      const responseData = await result.json();
-      console.log('Resultado de data_telemetria:', responseData);
-
-      // Almacena la respuesta de Django en el estado
-      setDjangoResponse(responseData);
     } catch (error) {
       console.error('Error al enviar datos a Django:', error);
     }
   };
 
+  const compressData = (data) => {
+    // Convierte los datos a JSON
+    const jsonData = JSON.stringify(data);
+    // Comprime los datos utilizando gzip
+    const compressedData = pako.gzip(jsonData, { level: 9 });
+    return compressedData;
+  };
+
   useEffect(() => {
     const fetchDataRecursive = async (pageNumber) => {
       let currentPage = pageNumber;
-      while (stopFetching) {
+      while (true) {
         try {
           const data = await fetchData(currentPage);
           if (data.length > 0) {
@@ -82,7 +86,7 @@ const Telemetria = () => {
     };
 
     fetchDataRecursive(0);
-  }, [stopFetching]);
+  }, []);
 
   const getTimeDate = (timestamp) => {
     const data = new Date(timestamp);
@@ -95,25 +99,6 @@ const Telemetria = () => {
     return fecha.toISOString().split('T')[0];
   };
 
-  useEffect(() => {
-    let shouldStopFetching = false; // Bandera para detener la descarga de datos
-  
-    // Iterar sobre los elementos de djangoResponse y mostrar "banana" si el mensaje es "Duplicate record"
-    if (djangoResponse) {
-      djangoResponse.forEach(response => {
-        if (response.message === 'Duplicate record') {
-          console.log('banana');
-          shouldStopFetching = true; // Establecer la bandera en verdadero
-        }
-      });
-    }
-  
-    // Actualizar el estado fuera del bucle
-    if (shouldStopFetching) {
-      setStopFetching(false); // Detener la descarga de datos
-    }
-    console.log(stopFetching)
-  }, [djangoResponse]);
   
   return null; // Opcional: reemplazar con el contenido JSX necesario
 };

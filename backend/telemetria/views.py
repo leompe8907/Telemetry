@@ -6,7 +6,8 @@ from rest_framework.views import APIView  # Clase base para vistas basadas en cl
 from rest_framework import viewsets  # Clase para definir vistas de conjunto en Django REST framework
 from .serializer import TelemetriaSerializer, MergedTelemetricOTTSerializer, MergedTelemetricDVBSerializer, MergedTelemetricCatchupSerializer # Importa los serializadores necesarios
 from .models import Telemetria, MergedTelemetricOTT, MergedTelemetricDVB  # Importa los modelos necesarios
-import json  # Módulo para trabajar con datos JSON
+import gzip
+import json
 from rest_framework import status
 from rest_framework.response import Response  # Clase para manejar respuestas HTTP
 from django.utils.decorators import method_decorator
@@ -22,8 +23,12 @@ class TelemetriaViewSet(viewsets.ModelViewSet):
 @require_POST
 def DataTelemetria(request):
     try:
-        # Parsea los datos del cuerpo de la solicitud como JSON
-        data_batch = json.loads(request.body.decode('utf-8'))
+        # Descomprimir los datos Gzip
+        compressed_data = request.body
+        decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
+
+        # Parsear los datos descomprimidos del cuerpo de la solicitud como JSON
+        data_batch = json.loads(decompressed_data)
 
         # Lista para almacenar respuestas individuales para cada registro en el lote
         responses = []
@@ -133,8 +138,7 @@ class MergedDataOTT(APIView):
 
         # Devuelve los datos fusionados
         return merged_data
-
-class ProcessMergedDataOTT(APIView):
+    
     def post(self, request, *args, **kwargs):
         try:
             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
@@ -152,8 +156,7 @@ class ProcessMergedDataOTT(APIView):
         except Exception as e:
             # En caso de error, devuelve una respuesta de error con el mensaje
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class DataAccionOTT(APIView):
+    
     def get(self, request, *args, **kwargs):
         # Obtiene todos los objetos de la tabla MergedTelemetricOTT en la base de datos
         data = MergedTelemetricOTT.objects.all()
@@ -163,6 +166,36 @@ class DataAccionOTT(APIView):
         
         # Devuelve una respuesta con los datos serializados
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# class ProcessMergedDataOTT(APIView):
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
+#             merged_data = MergedDataOTT.FilterAndSumData()
+            
+#             # Verifica y almacena en la base de datos MergedTelemetricOTT
+#             for merged_item in merged_data:
+#                 record_id = merged_item.get('recordId')
+#                 if record_id and not MergedTelemetricOTT.objects.filter(recordId=record_id).exists():
+#                     # Si el recordId no está en la base de datos, almacenarlo
+#                     MergedTelemetricOTT.objects.create(**merged_item)
+
+#             # Devuelve una respuesta con los datos fusionados
+#             return Response({"message": merged_data }, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             # En caso de error, devuelve una respuesta de error con el mensaje
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# class DataAccionOTT(APIView):
+#     def get(self, request, *args, **kwargs):
+#         # Obtiene todos los objetos de la tabla MergedTelemetricOTT en la base de datos
+#         data = MergedTelemetricOTT.objects.all()
+        
+#         # Serializa los datos obtenidos utilizando tu propio serializador
+#         serializer = MergedTelemetricOTTSerializer(data, many=True)
+        
+#         # Devuelve una respuesta con los datos serializados
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MergedDataDVB(APIView):
     @staticmethod
