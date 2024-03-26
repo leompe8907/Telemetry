@@ -1,7 +1,7 @@
 import {hex_md5} from './md5'
 
 export let CV = {
-	baseUrl : "https://cv01.panaccess.com",
+	baseUrl : "https://pmdw-1.in.tv.br",
 	mode : 'json',
 	jsonpTimeout: 5000,
 	sessionId : null,

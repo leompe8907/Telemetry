@@ -15,7 +15,7 @@ function loggedIn() {
 
 window.onload = ()=>{
   CV.init({
-      baseUrl : "https://cv01.panaccess.com",
+      baseUrl : "https://pmdw-1.in.tv.br",
       mode: "json",
       jsonpTimeout: 5000,
       username: localStorage.getItem('cvUser'),

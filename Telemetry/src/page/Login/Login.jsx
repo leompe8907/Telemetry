@@ -7,7 +7,7 @@ import "./Login.scss"
 
 
 function Login() {
-  const cvToken = "bnctZTHpigaMzLhfdRVJ";
+  const cvToken = "AsGHqHpHYZiacNsAWiyS";
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
@@ -23,7 +23,7 @@ function Login() {
   
   const onWindLoad = () => {
     CV.init({
-      baseUrl : "https://cv01.panaccess.com",
+      baseUrl : "https://pmdw-1.in.tv.br",
       mode:"json",
       username:username,
       password:password,

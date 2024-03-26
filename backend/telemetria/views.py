@@ -167,36 +167,6 @@ class MergedDataOTT(APIView):
         # Devuelve una respuesta con los datos serializados
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# class ProcessMergedDataOTT(APIView):
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
-#             merged_data = MergedDataOTT.FilterAndSumData()
-            
-#             # Verifica y almacena en la base de datos MergedTelemetricOTT
-#             for merged_item in merged_data:
-#                 record_id = merged_item.get('recordId')
-#                 if record_id and not MergedTelemetricOTT.objects.filter(recordId=record_id).exists():
-#                     # Si el recordId no está en la base de datos, almacenarlo
-#                     MergedTelemetricOTT.objects.create(**merged_item)
-
-#             # Devuelve una respuesta con los datos fusionados
-#             return Response({"message": merged_data }, status=status.HTTP_200_OK)
-#         except Exception as e:
-#             # En caso de error, devuelve una respuesta de error con el mensaje
-#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-# class DataAccionOTT(APIView):
-#     def get(self, request, *args, **kwargs):
-#         # Obtiene todos los objetos de la tabla MergedTelemetricOTT en la base de datos
-#         data = MergedTelemetricOTT.objects.all()
-        
-#         # Serializa los datos obtenidos utilizando tu propio serializador
-#         serializer = MergedTelemetricOTTSerializer(data, many=True)
-        
-#         # Devuelve una respuesta con los datos serializados
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
 class MergedDataDVB(APIView):
     @staticmethod
     def FilterAndSumData():
@@ -225,8 +195,7 @@ class MergedDataDVB(APIView):
         
         # Devuelve los datos fusionados
         return merged_data
-
-class ProcessMergedDataDVB(APIView):
+    
     def post(self, request, *args, **kwargs):
         try:
             # Aquí puedes llamar a tu lógica para procesar y almacenar los datos
@@ -243,8 +212,7 @@ class ProcessMergedDataDVB(APIView):
         except Exception as e:
             # En caso de error, devuelve una respuesta de error con el mensaje
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class DataAccionDVB(APIView):
+        
     def get(self, request, *args, **kwargs):
         # Obtiene todos los objetos de la tabla MergedTelemetricDVB en la base de datos
         data = MergedTelemetricDVB.objects.all()

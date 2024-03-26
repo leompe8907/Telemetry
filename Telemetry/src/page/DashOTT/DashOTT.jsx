@@ -113,7 +113,7 @@ function DashOTT() {
      const times = result.timeDate;
 
      // Sumar dataDuration según la franja horaria
-     if (times >= 4 && times < 12) {
+     if (times >= 5 && times < 12) {
        sums.Mañana += dataDuration;
      } else if (times >= 12 && times < 18) {
        sums.Tarde += dataDuration;
@@ -376,19 +376,19 @@ function DashOTT() {
                       </thead>
                       <tbody className='containerTableTBody tableTBodyTimeZone'>
                         <tr className='containerTableTr tableTrTimeZone'>
-                          <td className='containerTableTh'>Mañana</td>
+                          <td className='containerTableTh'>Mañana 5-12</td>
                           <td className='containerTableTh'>{sumByTimeSlot.Mañana}</td>
                         </tr>
                         <tr className='containerTableTr tableTrTimeZone'>
-                          <td className='containerTableTh'>Tarde</td>
+                          <td className='containerTableTh'>Tarde 12-18</td>
                           <td className='containerTableTh'>{sumByTimeSlot.Tarde}</td>
                         </tr>
                         <tr className='containerTableTr tableTrTimeZone'>
-                          <td className='containerTableTh'>Noche</td>
+                          <td className='containerTableTh'>Noche 18-23</td>
                           <td className='containerTableTh'>{sumByTimeSlot.Noche}</td>
                         </tr>
                         <tr className='containerTableTr tableTrTimeZone'>
-                          <td className='containerTableTh'>Madrugada</td>
+                          <td className='containerTableTh'>Madrugada 23-05</td>
                           <td className='containerTableTh'>{sumByTimeSlot.Madrugada}</td>
                         </tr>
                       </tbody>
